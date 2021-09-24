@@ -6,7 +6,6 @@ import RegisterScreen from './screens/RegisterScreen';
 import HomeScreen from './screens/HomeScreen';
 import AddChatScreen from './screens/AddChatScreen';
 import ChatScreen from './screens/ChatScreen';
-import PlaySound from './screens/PlaySound';
 
 const Stack = createNativeStackNavigator();
 const globalScreenOptions = {
@@ -54,13 +53,6 @@ function App() {
 					}}
 					name='Chat'
 					component={ChatScreen}
-				/>
-				<Stack.Screen
-					options={{
-						title: 'PlaySound',
-					}}
-					name='PlaySound'
-					component={PlaySound}
 				/>
 			</Stack.Navigator>
 		</NavigationContainer>

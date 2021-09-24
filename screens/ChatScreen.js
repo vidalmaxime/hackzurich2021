@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useState } from 'react';
-import { Platform } from 'react-native';
+import { Platform, Image } from 'react-native';
 import { ScrollView } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native';
 import { SimpleLineIcons } from '@expo/vector-icons';
@@ -27,6 +27,7 @@ const ChatScreen = ({ navigation, route }) => {
 		db.collection('chats').doc(route.params.id).collection('messages').add({
 			timestamp: firebase.firestore.FieldValue.serverTimestamp(),
 			message: input,
+			type: 'text',
 			displayName: auth.currentUser.displayName,
 			email: auth.currentUser.email,
 			photoURL: auth.currentUser.photoURL,
@@ -35,14 +36,22 @@ const ChatScreen = ({ navigation, route }) => {
 		setInput('');
 	}
 
-	function sendAudioMessage(audio) {
-		db.collection('chats').doc(route.params.id).collection('messages').add({
-			timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-			message: audio,
-			displayName: auth.currentUser.displayName,
-			email: auth.currentUser.email,
-			photoURL: auth.currentUser.photoURL,
-		});
+	function sendAudioMessage() {
+		console.log('hello');
+
+		const audioRef = db
+			.collection('chats')
+			.doc(route.params.id)
+			.collection('messages')
+			.add({
+				timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+				message: 'this is an audio',
+				type: 'audio',
+				displayName: auth.currentUser.displayName,
+				email: auth.currentUser.email,
+				photoURL: auth.currentUser.photoURL,
+			});
+		return audioRef;
 	}
 
 	useLayoutEffect(() => {
@@ -109,17 +118,22 @@ const ChatScreen = ({ navigation, route }) => {
 		const response = await fetch(uri);
 		const blob = await response.blob();
 		if (blob != null) {
-			const uriParts = uri.split('.');
-			const fileType = uriParts[uriParts.length - 1];
-			firebase
-				.storage()
-				.ref()
-				.child(`nameOfTheFile.${fileType}`)
-				.put(blob, {
-					contentType: `audio/${fileType}`,
-				})
-				.then(() => {
-					console.log('Sent!');
+			sendAudioMessage()
+				.then((audioRef) => {
+					const uriParts = uri.split('.');
+					const fileType = uriParts[uriParts.length - 1];
+					const nameOfFile = audioRef.id;
+					firebase
+						.storage()
+						.ref()
+						.child(`${nameOfFile}.${fileType}`)
+						.put(blob, {
+							contentType: `audio/${fileType}`,
+						})
+						.then(() => {
+							console.log('Sent!');
+						})
+						.catch((e) => console.log('error:', e));
 				})
 				.catch((e) => console.log('error:', e));
 		} else {
@@ -127,11 +141,9 @@ const ChatScreen = ({ navigation, route }) => {
 		}
 	}
 
-	const downloadAudio = async () => {
-		const uri = await firebase
-			.storage()
-			.ref('nameOfTheFile.m4a')
-			.getDownloadURL();
+	const downloadAudio = async (id) => {
+		console.log(id);
+		const uri = await firebase.storage().ref(`${id}.m4a`).getDownloadURL();
 
 		console.log('uri:', uri);
 
@@ -170,7 +182,19 @@ const ChatScreen = ({ navigation, route }) => {
 											left={20}
 											size={20}
 										/>
-										<Text style={styles.sendText}>{data.message}</Text>
+										{data.type === 'text' ? (
+											<Text style={styles.sendText}>{data.message}</Text>
+										) : (
+											<TouchableOpacity
+												activeOpacity={0.5}
+												onPress={() => downloadAudio(id)}
+											>
+												<Image
+													style={styles.playButton}
+													source={require('../assets/play.png')}
+												/>
+											</TouchableOpacity>
+										)}
 									</View>
 								) : (
 									<View key={id} style={styles.receiver}>
@@ -182,7 +206,19 @@ const ChatScreen = ({ navigation, route }) => {
 											right={20}
 											size={20}
 										/>
-										<Text style={styles.receiverText}>{data.message}</Text>
+										{data.type === 'text' ? (
+											<Text style={styles.receiverText}>{data.message}</Text>
+										) : (
+											<TouchableOpacity
+												activeOpacity={0.5}
+												onPress={() => downloadAudio(id)}
+											>
+												<Image
+													style={styles.playButton}
+													source={require('../assets/play.png')}
+												/>
+											</TouchableOpacity>
+										)}
 										<Text style={styles.receiverName}>{data.displayName}</Text>
 									</View>
 								)
@@ -204,10 +240,6 @@ const ChatScreen = ({ navigation, route }) => {
 							<Button
 								title={recording ? 'Stop Recording' : 'Start Recording'}
 								onPress={recording ? stopRecording : startRecording}
-							/>
-							<Button
-								title={'Download and play audio'}
-								onPress={downloadAudio}
 							/>
 						</View>
 					</>
@@ -262,5 +294,9 @@ const styles = StyleSheet.create({
 	receiverText: {
 		color: 'black',
 		fontSize: 15,
+	},
+	playButton: {
+		width: 30,
+		height: 30,
 	},
 });
