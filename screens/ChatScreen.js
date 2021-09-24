@@ -11,14 +11,16 @@ import {
 	TouchableOpacity,
 	TouchableWithoutFeedback,
 } from 'react-native';
-import { Avatar, Input } from 'react-native-elements';
+import { Avatar, Input, Button } from 'react-native-elements';
 import { Keyboard } from 'react-native';
 import { db, auth } from '../firebase';
 import * as firebase from 'firebase';
+import { Audio } from 'expo-av';
 
 const ChatScreen = ({ navigation, route }) => {
 	const [input, setInput] = useState('');
 	const [messages, setMessages] = useState([]);
+	const [recording, setRecording] = React.useState();
 
 	function sendMessage() {
 		Keyboard.dismiss();
@@ -31,6 +33,16 @@ const ChatScreen = ({ navigation, route }) => {
 		});
 
 		setInput('');
+	}
+
+	function sendAudioMessage(audio) {
+		db.collection('chats').doc(route.params.id).collection('messages').add({
+			timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+			message: audio,
+			displayName: auth.currentUser.displayName,
+			email: auth.currentUser.email,
+			photoURL: auth.currentUser.photoURL,
+		});
 	}
 
 	useLayoutEffect(() => {
@@ -68,6 +80,70 @@ const ChatScreen = ({ navigation, route }) => {
 
 		return unsubscribe;
 	}, [route]);
+
+	async function startRecording() {
+		try {
+			console.log('Requesting permissions..');
+			await Audio.requestPermissionsAsync();
+			await Audio.setAudioModeAsync({
+				allowsRecordingIOS: true,
+				playsInSilentModeIOS: true,
+			});
+			console.log('Starting recording..');
+			const { recording } = await Audio.Recording.createAsync(
+				Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY
+			);
+			setRecording(recording);
+			console.log('Recording started');
+		} catch (err) {
+			console.error('Failed to start recording', err);
+		}
+	}
+
+	async function stopRecording() {
+		console.log('Stopping recording..');
+		setRecording(undefined);
+		await recording.stopAndUnloadAsync();
+		const uri = recording.getURI();
+		console.log('Recording stopped and stored at', uri);
+		const response = await fetch(uri);
+		const blob = await response.blob();
+		if (blob != null) {
+			const uriParts = uri.split('.');
+			const fileType = uriParts[uriParts.length - 1];
+			firebase
+				.storage()
+				.ref()
+				.child(`nameOfTheFile.${fileType}`)
+				.put(blob, {
+					contentType: `audio/${fileType}`,
+				})
+				.then(() => {
+					console.log('Sent!');
+				})
+				.catch((e) => console.log('error:', e));
+		} else {
+			console.log('erroor with blob');
+		}
+	}
+
+	const downloadAudio = async () => {
+		const uri = await firebase
+			.storage()
+			.ref('nameOfTheFile.m4a')
+			.getDownloadURL();
+
+		console.log('uri:', uri);
+
+		// The rest of this plays the audio
+		const soundObject = new Audio.Sound();
+		try {
+			await soundObject.loadAsync({ uri });
+			await soundObject.playAsync();
+		} catch (error) {
+			console.log('error:', error);
+		}
+	};
 
 	return (
 		<SafeAreaView style={styles.container}>
@@ -123,6 +199,16 @@ const ChatScreen = ({ navigation, route }) => {
 							<TouchableOpacity activeOpacity={0.5} onPress={sendMessage}>
 								<SimpleLineIcons name='cursor' size={16} color='black' />
 							</TouchableOpacity>
+						</View>
+						<View>
+							<Button
+								title={recording ? 'Stop Recording' : 'Start Recording'}
+								onPress={recording ? stopRecording : startRecording}
+							/>
+							<Button
+								title={'Download and play audio'}
+								onPress={downloadAudio}
+							/>
 						</View>
 					</>
 				</TouchableWithoutFeedback>

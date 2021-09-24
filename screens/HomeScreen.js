@@ -70,17 +70,6 @@ const HomeScreen = ({ navigation }) => {
 					/>
 				))}
 			</ScrollView>
-			<View>
-				<TouchableOpacity
-					activeOpacity={0.5}
-					onPress={() => navigation.navigate('PlaySound')}
-				>
-					<Image
-						style={styles.playImage}
-						source={require('../assets/play.png')}
-					/>
-				</TouchableOpacity>
-			</View>
 		</SafeAreaView>
 	);
 };
