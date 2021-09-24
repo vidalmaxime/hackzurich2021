@@ -1,57 +1,38 @@
 import React, { useLayoutEffect, useState } from 'react';
-import { Platform, Image } from 'react-native';
+import { Platform } from 'react-native';
 import { ScrollView } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native';
-import { SimpleLineIcons } from '@expo/vector-icons';
 import {
 	StyleSheet,
 	Text,
 	View,
 	SafeAreaView,
-	TouchableOpacity,
 	TouchableWithoutFeedback,
 } from 'react-native';
-import { Avatar, Input, Button } from 'react-native-elements';
+import { Avatar, Button } from 'react-native-elements';
 import { Keyboard } from 'react-native';
 import { db, auth } from '../firebase';
 import * as firebase from 'firebase';
 import { Audio } from 'expo-av';
+import AudioPlayer from '../components/AudioPlayer';
+import uuid from 'react-native-uuid';
 
 const ChatScreen = ({ navigation, route }) => {
-	const [input, setInput] = useState('');
 	const [messages, setMessages] = useState([]);
 	const [recording, setRecording] = React.useState();
 
-	function sendMessage() {
-		Keyboard.dismiss();
+	function sendAudioMessage(id) {
+		console.log('hello');
+
 		db.collection('chats').doc(route.params.id).collection('messages').add({
 			timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-			message: input,
-			type: 'text',
+			message: 'this is an audio',
+			type: 'audio',
+			fileId: id,
 			displayName: auth.currentUser.displayName,
 			email: auth.currentUser.email,
 			photoURL: auth.currentUser.photoURL,
 		});
-
-		setInput('');
-	}
-
-	function sendAudioMessage() {
-		console.log('hello');
-
-		const audioRef = db
-			.collection('chats')
-			.doc(route.params.id)
-			.collection('messages')
-			.add({
-				timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-				message: 'this is an audio',
-				type: 'audio',
-				displayName: auth.currentUser.displayName,
-				email: auth.currentUser.email,
-				photoURL: auth.currentUser.photoURL,
-			});
-		return audioRef;
 	}
 
 	useLayoutEffect(() => {
@@ -118,44 +99,26 @@ const ChatScreen = ({ navigation, route }) => {
 		const response = await fetch(uri);
 		const blob = await response.blob();
 		if (blob != null) {
-			sendAudioMessage()
-				.then((audioRef) => {
-					const uriParts = uri.split('.');
-					const fileType = uriParts[uriParts.length - 1];
-					const nameOfFile = audioRef.id;
-					firebase
-						.storage()
-						.ref()
-						.child(`${nameOfFile}.${fileType}`)
-						.put(blob, {
-							contentType: `audio/${fileType}`,
-						})
-						.then(() => {
-							console.log('Sent!');
-						})
-						.catch((e) => console.log('error:', e));
+			const uriParts = uri.split('.');
+			const fileType = uriParts[uriParts.length - 1];
+			const nameOfFile = uuid.v4();
+
+			firebase
+				.storage()
+				.ref()
+				.child(`${nameOfFile}.${fileType}`)
+				.put(blob, {
+					contentType: `audio/${fileType}`,
+				})
+				.then(() => {
+					console.log('Sent!');
+					sendAudioMessage(nameOfFile);
 				})
 				.catch((e) => console.log('error:', e));
 		} else {
-			console.log('erroor with blob');
+			console.log('error with blob');
 		}
 	}
-
-	const downloadAudio = async (id) => {
-		console.log(id);
-		const uri = await firebase.storage().ref(`${id}.m4a`).getDownloadURL();
-
-		console.log('uri:', uri);
-
-		// The rest of this plays the audio
-		const soundObject = new Audio.Sound();
-		try {
-			await soundObject.loadAsync({ uri });
-			await soundObject.playAsync();
-		} catch (error) {
-			console.log('error:', error);
-		}
-	};
 
 	return (
 		<SafeAreaView style={styles.container}>
@@ -182,19 +145,7 @@ const ChatScreen = ({ navigation, route }) => {
 											left={20}
 											size={20}
 										/>
-										{data.type === 'text' ? (
-											<Text style={styles.sendText}>{data.message}</Text>
-										) : (
-											<TouchableOpacity
-												activeOpacity={0.5}
-												onPress={() => downloadAudio(id)}
-											>
-												<Image
-													style={styles.playButton}
-													source={require('../assets/play.png')}
-												/>
-											</TouchableOpacity>
-										)}
+										<AudioPlayer id={data.fileId} />
 									</View>
 								) : (
 									<View key={id} style={styles.receiver}>
@@ -206,36 +157,14 @@ const ChatScreen = ({ navigation, route }) => {
 											right={20}
 											size={20}
 										/>
-										{data.type === 'text' ? (
-											<Text style={styles.receiverText}>{data.message}</Text>
-										) : (
-											<TouchableOpacity
-												activeOpacity={0.5}
-												onPress={() => downloadAudio(id)}
-											>
-												<Image
-													style={styles.playButton}
-													source={require('../assets/play.png')}
-												/>
-											</TouchableOpacity>
-										)}
+
+										<AudioPlayer id={data.fileId} />
 										<Text style={styles.receiverName}>{data.displayName}</Text>
 									</View>
 								)
 							)}
 						</ScrollView>
-						<View style={styles.footer}>
-							<Input
-								value={input}
-								onChangeText={(text) => setInput(text)}
-								placeholder='Send message'
-								style={styles.textInput}
-								onSubmitEditing={sendMessage}
-							/>
-							<TouchableOpacity activeOpacity={0.5} onPress={sendMessage}>
-								<SimpleLineIcons name='cursor' size={16} color='black' />
-							</TouchableOpacity>
-						</View>
+
 						<View>
 							<Button
 								title={recording ? 'Stop Recording' : 'Start Recording'}
@@ -294,9 +223,5 @@ const styles = StyleSheet.create({
 	receiverText: {
 		color: 'black',
 		fontSize: 15,
-	},
-	playButton: {
-		width: 30,
-		height: 30,
 	},
 });
