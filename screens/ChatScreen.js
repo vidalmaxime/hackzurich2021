@@ -8,6 +8,8 @@ import {
 	View,
 	SafeAreaView,
 	TouchableWithoutFeedback,
+	Image,
+	TouchableOpacity,
 } from 'react-native';
 import { Avatar, Button } from 'react-native-elements';
 import { Keyboard } from 'react-native';
@@ -165,12 +167,24 @@ const ChatScreen = ({ navigation, route }) => {
 							)}
 						</ScrollView>
 
-						<View>
-							<Button
-								title={recording ? 'Stop Recording' : 'Start Recording'}
-								onPress={recording ? stopRecording : startRecording}
-							/>
-						</View>
+						<TouchableOpacity
+							activeOpacity={0.5}
+							onPressIn={startRecording}
+							onPressOut={stopRecording}
+							style={styles.containerRecord}
+						>
+							{recording ? (
+								<Image
+									style={styles.recording}
+									source={require('../assets/record.png')}
+								/>
+							) : (
+								<Image
+									style={styles.notRecording}
+									source={require('../assets/record.png')}
+								/>
+							)}
+						</TouchableOpacity>
 					</>
 				</TouchableWithoutFeedback>
 			</KeyboardAvoidingView>
@@ -223,5 +237,26 @@ const styles = StyleSheet.create({
 	receiverText: {
 		color: 'black',
 		fontSize: 15,
+	},
+	recording: {
+		width: 100,
+		height: 100,
+		borderRadius: 50,
+		borderWidth: 5,
+		borderColor: 'red',
+		marginBottom: 40,
+	},
+	notRecording: {
+		width: 100,
+		height: 100,
+		borderRadius: 50,
+		borderWidth: 5,
+		borderColor: 'black',
+		marginBottom: 40,
+	},
+	containerRecord: {
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'center',
 	},
 });
