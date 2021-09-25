@@ -1,5 +1,4 @@
 import React, { useLayoutEffect, useState, useEffect, useRef } from 'react';
-import { Platform, SliderComponent } from 'react-native';
 import { ScrollView } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native';
 import {
@@ -10,6 +9,9 @@ import {
 	TouchableWithoutFeedback,
 	Image,
 	TouchableOpacity,
+	ImageBackground, 
+	Platform,
+	SliderComponent,
 } from 'react-native';
 import { Avatar, Button } from 'react-native-elements';
 import { Keyboard } from 'react-native';
@@ -46,16 +48,14 @@ const ChatScreen = ({ navigation, route }) => {
 	useLayoutEffect(() => {
 		navigation.setOptions({
 			headerTitle: () => (
-				<View
-					style={{ marginLeft: 20, flexDirection: 'row', alignItems: 'center' }}
-				>
+				<View style={styles.header}>
 					<Avatar
 						rounded
 						source={{
 							uri: 'https://www.seekpng.com/png/full/110-1100707_person-avatar-placeholder.png',
 						}}
+						size='large'
 					/>
-					<Text> {route.params.chatName} </Text>
 				</View>
 			),
 		});
@@ -162,6 +162,8 @@ const ChatScreen = ({ navigation, route }) => {
 				style={styles.containerAvoid}
 				keyboardVerticalOffset={90}
 			>
+			<ImageBackground source={require('../assets/CelestialGradient.png')} resizeMode='cover' style={styles.image}>
+			{/* <LinearGradient colors={['black', 'white']} style={{flex:1}}> */}
 				<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 					<>
 						<ScrollView
@@ -174,37 +176,29 @@ const ChatScreen = ({ navigation, route }) => {
 								.slice(0)
 								.reverse()
 								.map(({ id, data }) =>
-									data.email === auth.currentUser.email ? (
-										<View key={id} style={styles.sender}>
-											<Avatar
-												rounded
-												source={{ uri: data.photoURL }}
-												position='absolute'
-												bottom={-10}
-												left={20}
-												size={20}
-											/>
-											<AudioPlayer id={data.fileId} />
-											{showApiInfo(data)}
-										</View>
-									) : (
-										<View key={id} style={styles.receiver}>
-											<Avatar
-												rounded
-												source={{ uri: data.photoURL }}
-												position='absolute'
-												bottom={-10}
-												right={20}
-												size={20}
-											/>
+								data.email === auth.currentUser.email ? (
+									<View key={id} style={styles.sender}>
+										<Avatar
+											rounded
+											source={{ uri: data.photoURL }}
+											size='medium'
+										/>
+										<AudioPlayer id={data.fileId}/>
+										{showApiInfo(data)}
+									</View>
+								) : (
+									<View key={id} style={styles.receiver}>
+										<Avatar
+											rounded
+											source={{ uri: data.photoURL }}
+											size='medium'
+										/>
 
-											<AudioPlayer id={data.fileId} />
-											<Text style={styles.receiverName}>
-												{data.displayName}
-											</Text>
-										</View>
-									)
-								)}
+										<AudioPlayer id={data.fileId}/>
+										{showApiInfo(data)}
+									</View>
+								)
+							)}
 						</ScrollView>
 
 						<TouchableOpacity
@@ -215,18 +209,20 @@ const ChatScreen = ({ navigation, route }) => {
 						>
 							{recording ? (
 								<Image
-									style={styles.recording}
-									source={require('../assets/record.png')}
+									style={styles.micActivated}
+									source={require('../assets/microphone.png')}
 								/>
 							) : (
 								<Image
-									style={styles.notRecording}
-									source={require('../assets/record.png')}
+									style={styles.micDeactivated}
+									source={require('../assets/microphone.png')}
 								/>
 							)}
 						</TouchableOpacity>
 					</>
 				</TouchableWithoutFeedback>
+			</ImageBackground>
+			{/* </LinearGradient> */}
 			</KeyboardAvoidingView>
 		</SafeAreaView>
 	);
@@ -235,11 +231,21 @@ const ChatScreen = ({ navigation, route }) => {
 export default ChatScreen;
 
 const styles = StyleSheet.create({
+	header: {
+		alignItems: 'center',
+		alignSelf: 'center',
+		backgroundColor: 'black'
+	},
 	container: {
 		flex: 1,
 	},
 	containerAvoid: {
 		flex: 1,
+	},
+	image: {
+		flex:1,
+		justifyContent: 'center',
+
 	},
 	footer: {
 		flexDirection: 'row',
@@ -247,52 +253,55 @@ const styles = StyleSheet.create({
 		width: '100%',
 		padding: 20,
 	},
-	textInput: {
-		bottom: 0,
-		marginRight: 15,
-		flex: 1,
-		height: 40,
-		borderRadius: 30,
-		padding: 10,
-		backgroundColor: '#c5e3cd',
-	},
 	receiver: {
-		padding: 15,
+		flexDirection: 'row',
+		width: '80%',
+		padding: '5%',
+		margin: '5%',
 		alignSelf: 'flex-start',
-		maxWidth: '80%',
-		position: 'relative',
-		marginBottom: 20,
+
+		backgroundColor: 'rgba(0, 0, 0, 0.2)',
+		borderRadius: 30,
+
+		// iOS only
+		shadowOffset: {
+			width: 20,
+			height: 20,
+		},
+		shadowColor: "black",
+		shadowOpacity: 1.,
 	},
 	sender: {
-		padding: 15,
+		flexDirection: 'row-reverse',
+		width: '80%',
+		padding: '5%',
+		margin: '5%',
 		alignSelf: 'flex-end',
-		maxWidth: '80%',
-		position: 'relative',
-		marginBottom: 20,
+
+		backgroundColor: 'rgba(0, 0, 0, 0.35)',
+		borderRadius: 30,
+		
+		// iOS only
+		shadowOffset: {
+			width: 20,
+			height: 20,
+		},
+		shadowColor: "black",
+		shadowOpacity: 1.,
 	},
-	receiverName: {
-		color: 'grey',
-		fontSize: 10,
-	},
-	receiverText: {
-		color: 'black',
-		fontSize: 15,
-	},
-	recording: {
+	micActivated: {
 		width: 100,
 		height: 100,
 		borderRadius: 50,
-		borderWidth: 5,
-		borderColor: 'red',
 		marginBottom: 40,
+		backgroundColor: "rgba(0, 0, 0, 0.4)",
 	},
-	notRecording: {
+	micDeactivated: {
 		width: 100,
 		height: 100,
 		borderRadius: 50,
-		borderWidth: 5,
-		borderColor: 'black',
 		marginBottom: 40,
+		backgroundColor: "rgba(0, 0, 0, 0.6)",
 	},
 	containerRecord: {
 		display: 'flex',

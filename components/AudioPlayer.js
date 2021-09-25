@@ -85,8 +85,15 @@ const AudioPlayer = ({ id }) => {
 	}
 
 	return !playing ? (
-		<TouchableOpacity activeOpacity={0.5} onPress={startPlaying}>
-			<Image style={styles.playButton} source={require('../assets/play.png')} />
+		<TouchableOpacity 
+			activeOpacity={0.5} 
+			onPress={startPlaying}
+			style={styles.audioPlayer}
+		>
+			<Image 
+				style={styles.playButton} 
+				source={require('../assets/play.png')} 
+			/>
 		</TouchableOpacity>
 	) : (
 		<TouchableOpacity activeOpacity={0.5} onPress={stopPlaying}>
@@ -101,8 +108,12 @@ const AudioPlayer = ({ id }) => {
 export default AudioPlayer;
 
 const styles = StyleSheet.create({
+	audioPlayer: {
+		alignSelf: 'center',
+	},
+	
 	playButton: {
-		width: 30,
-		height: 30,
+		width: 40,
+		height: 40,
 	},
 });
