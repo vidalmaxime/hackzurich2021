@@ -162,7 +162,7 @@ const ChatScreen = ({ navigation, route }) => {
 				style={styles.containerAvoid}
 				keyboardVerticalOffset={90}
 			>
-			<ImageBackground source={require('../assets/CelestialGradient.png')} resizeMode='cover' style={styles.image}>
+			{/*<ImageBackground source={require('../assets/CelestialGradient.png')} resizeMode='cover' style={styles.image}>*/}
 			{/* <LinearGradient colors={['black', 'white']} style={{flex:1}}> */}
 				<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 					<>
@@ -221,7 +221,7 @@ const ChatScreen = ({ navigation, route }) => {
 						</TouchableOpacity>
 					</>
 				</TouchableWithoutFeedback>
-			</ImageBackground>
+			{/*</ImageBackground>*/}
 			{/* </LinearGradient> */}
 			</KeyboardAvoidingView>
 		</SafeAreaView>
@@ -264,12 +264,12 @@ const styles = StyleSheet.create({
 		borderRadius: 30,
 
 		// iOS only
-		shadowOffset: {
-			width: 20,
-			height: 20,
-		},
-		shadowColor: "black",
-		shadowOpacity: 1.,
+		// shadowOffset: {
+		// 	width: 20,
+		// 	height: 20,
+		// },
+		// shadowColor: "black",
+		// shadowOpacity: 1.,
 	},
 	sender: {
 		flexDirection: 'row-reverse',
@@ -282,12 +282,12 @@ const styles = StyleSheet.create({
 		borderRadius: 30,
 		
 		// iOS only
-		shadowOffset: {
-			width: 20,
-			height: 20,
-		},
-		shadowColor: "black",
-		shadowOpacity: 1.,
+		// shadowOffset: {
+		// 	width: 20,
+		// 	height: 20,
+		// },
+		// shadowColor: "black",
+		// shadowOpacity: 1.,
 	},
 	micActivated: {
 		width: 100,
