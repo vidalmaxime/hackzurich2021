@@ -19,6 +19,7 @@ import * as firebase from 'firebase';
 import { Audio } from 'expo-av';
 import AudioPlayer from '../components/AudioPlayer';
 import uuid from 'react-native-uuid';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const ChatScreen = ({ navigation, route }) => {
 	const [messages, setMessages] = useState([]);
@@ -173,16 +174,19 @@ const ChatScreen = ({ navigation, route }) => {
 
 	return (
 		<SafeAreaView style={styles.container}>
+
 			<KeyboardAvoidingView
 				behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
 				style={styles.containerAvoid}
 				keyboardVerticalOffset={90}
 			>
-				<ImageBackground
-					source={require('../assets/background.png')}
-					resizeMode='cover'
-					style={styles.image}
-				>
+				{/*<ImageBackground*/}
+				{/*	source={require('../assets/background.png')}*/}
+				{/*	resizeMode='cover'*/}
+				{/*	style={styles.image}*/}
+				{/*>*/}
+
+
 					<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 						<>
 							<ScrollView
@@ -197,7 +201,14 @@ const ChatScreen = ({ navigation, route }) => {
 									.map(({ id, data }) =>
 										data.email === auth.currentUser.email ? (
 											<View style={styles.containerAudioText} key={id}>
+												<LinearGradient
+													colors={['#48c0ff', '#5548d2', '#831fde']}
+													locations={[0.1, 0.4, 0.8]}
+													start={[0,0.5]}
+													end={[1,0.5]}
+													style={styles.background}>
 												<View style={styles.sender}>
+
 													<Avatar
 														rounded
 														source={{ uri: data.photoURL }}
@@ -205,8 +216,10 @@ const ChatScreen = ({ navigation, route }) => {
 													/>
 
 													<AudioPlayer id={data.fileId} />
+
 												</View>
 												{showApiInfo(data, 'sender')}
+												</LinearGradient>
 											</View>
 										) : (
 											<View style={styles.containerAudioText} key={id}>
@@ -245,7 +258,8 @@ const ChatScreen = ({ navigation, route }) => {
 							</TouchableOpacity>
 						</>
 					</TouchableWithoutFeedback>
-				</ImageBackground>
+				{/*</ImageBackground>*/}
+				{/*</LinearGradient>*/}
 			</KeyboardAvoidingView>
 		</SafeAreaView>
 	);
@@ -285,12 +299,12 @@ const styles = StyleSheet.create({
 		borderRadius: 30,
 
 		// iOS only
-		shadowOffset: {
-			width: 5,
-			height: 5,
-		},
-		shadowColor: 'black',
-		shadowOpacity: 1,
+		// shadowOffset: {
+		// 	width: 5,
+		// 	height: 5,
+		// },
+		// shadowColor: 'black',
+		// shadowOpacity: 1,
 	},
 
 	sender: {
@@ -305,12 +319,12 @@ const styles = StyleSheet.create({
 		borderRadius: 30,
 
 		// iOS only
-		shadowOffset: {
-			width: 5,
-			height: 5,
-		},
-		shadowColor: 'black',
-		shadowOpacity: 1,
+		// shadowOffset: {
+		// 	width: 5,
+		// 	height: 5,
+		// },
+		// shadowColor: 'black',
+		// shadowOpacity: 1,
 	},
 	micActivated: {
 		width: 100,
@@ -346,12 +360,12 @@ const styles = StyleSheet.create({
 		borderRadius: 30,
 
 		// iOS only
-		shadowOffset: {
-			width: 2,
-			height: 2,
-		},
-		shadowColor: 'black',
-		shadowOpacity: 1,
+		// shadowOffset: {
+		// 	width: 2,
+		// 	height: 2,
+		// },
+		// shadowColor: 'black',
+		// shadowOpacity: 1,
 	},
 	apiSummaryContainerSender: {
 		flexDirection: 'row-reverse',
@@ -365,12 +379,12 @@ const styles = StyleSheet.create({
 		borderRadius: 30,
 
 		// iOS only
-		shadowOffset: {
-			width: 2,
-			height: 2,
-		},
-		shadowColor: 'black',
-		shadowOpacity: 1,
+		// shadowOffset: {
+		// 	width: 2,
+		// 	height: 2,
+		// },
+		// shadowColor: 'black',
+		// shadowOpacity: 1,
 	},
 
 	apiLoadingContainerSender: {
