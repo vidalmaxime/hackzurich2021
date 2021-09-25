@@ -14,7 +14,7 @@ function App() {
 		<NavigationContainer>
 			<Stack.Navigator initialRouteName='Login'>
 				<Stack.Screen
-					options={{ title: 'Sign up' }}
+					options={{ title: 'voki' }}
 					name='Login'
 					component={LoginScreen}
 				/>
