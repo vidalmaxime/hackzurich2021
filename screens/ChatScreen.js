@@ -26,8 +26,6 @@ const ChatScreen = ({ navigation, route }) => {
 	const abortedRecord = useRef(false);
 
 	function sendAudioMessage(id) {
-		console.log('hello');
-
 		db.collection('chats').doc(route.params.id).collection('messages').add({
 			timestamp: firebase.firestore.FieldValue.serverTimestamp(),
 			message: 'this is an audio',
@@ -147,6 +145,16 @@ const ChatScreen = ({ navigation, route }) => {
 		}
 	}
 
+	function showApiInfo(data) {
+		if (data.dataApi) {
+			const dataApi = JSON.parse(data.dataApi);
+			const sentimentAnalysis = dataApi.summary;
+			return <Text> {sentimentAnalysis} </Text>;
+		} else {
+			return <Text>Loading</Text>;
+		}
+	}
+
 	return (
 		<SafeAreaView style={styles.container}>
 			<KeyboardAvoidingView
@@ -177,6 +185,7 @@ const ChatScreen = ({ navigation, route }) => {
 												size={20}
 											/>
 											<AudioPlayer id={data.fileId} />
+											{showApiInfo(data)}
 										</View>
 									) : (
 										<View key={id} style={styles.receiver}>

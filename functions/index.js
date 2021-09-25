@@ -22,15 +22,16 @@ exports.processAudio = functions.storage.object().onFinalize(async (object) => {
 	data.append('audiofile', fs.createReadStream(tempFilePath));
 	const config = {
 		method: 'post',
-		url: 'http://2967-128-178-84-41.ngrok.io/speech2text',
+		url: 'http://23a4-128-178-84-41.ngrok.io/speech2text',
 		headers: {
 			...data.getHeaders(),
 		},
 		data: data,
 	};
-	axios(config)
+	await admin.firestore().collection('test').add({ test: 'hello' });
+	const cloudFunctionPromise = axios(config)
 		.then(function (response) {
-			console.log(JSON.stringify(response.data));
+			const apiOutput = JSON.stringify(response.data);
 			const db = admin.firestore();
 			const chatsRef = db.collection('chats');
 			const allChats = chatsRef.get().then((snapshot) => {
@@ -38,14 +39,31 @@ exports.processAudio = functions.storage.object().onFinalize(async (object) => {
 					console.log(doc.id, '=>', doc.data());
 					console.log(fileName);
 					const q = db
-						.collection('chats/${doc.id}/messages')
-						.where('fileId', '==', fileName.split('.')[0]);
-					console.log(q);
+						.collection('chats')
+						.doc(doc.id)
+						.collection('messages')
+						.where('fileId', '==', fileName.split('.')[0])
+						.get()
+						.then((snapshot) => {
+							if (!snapshot.empty) {
+								snapshot.forEach((newdoc) => {
+									admin
+										.firestore()
+										.collection('chats')
+										.doc(doc.id)
+										.collection('messages')
+										.doc(newdoc.id)
+										.update({ dataApi: apiOutput });
+								});
+
+								return true;
+							}
+						});
 				});
 			});
 		})
 		.catch(function (error) {
 			console.log(error);
 		});
-	// await admin.firestore().collection('test').add({ test: object.name });
+	return cloudFunctionPromise;
 });
