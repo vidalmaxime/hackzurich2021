@@ -53,8 +53,10 @@ def azure_batch_stt(filename: str):
     sentiments = [sentiment_classifier(speech_utterance) for speech_utterance in speech_utterances]
     print(sentiments)
 
+    speech_length= len(words)
+    print(speech_length)
     summarizer = pipeline('summarization')
-    summary = summarizer(result.text, min_length=5)
+    summary = summarizer(result.text, min_length=5, max_length=50)[0]["summary_text"]
     print(summary)
     if result.reason == speechsdk.ResultReason.RecognizedSpeech:
         return result.text, tokens_data, sentiments, summary
@@ -63,7 +65,7 @@ def azure_batch_stt(filename: str):
 
 
 def create_app(*args, ) -> Flask:
-    """ Entry point. Create app without autostart. """
+    """ Entry point. Creates app without autostart. """
     app = App(port=4030, start=True)  # start=False for gunicorn
     return app.server
 
