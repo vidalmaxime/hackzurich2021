@@ -53,13 +53,21 @@ def azure_batch_stt(filename: str):
     sentiments = [sentiment_classifier(speech_utterance) for speech_utterance in speech_utterances]
     print(sentiments)
 
+    # NER
+    ner_pipeline = pipeline('ner')
+    ners = ner_pipeline(result.text)
+
+
     speech_length= len(words)
     print(speech_length)
-    summarizer = pipeline('summarization')
-    summary = summarizer(result.text, min_length=5, max_length=50)[0]["summary_text"]
+    if speech_length <= 20:
+        summary = result.text
+    else:
+        summarizer = pipeline('summarization')
+        summary = summarizer(result.text, min_length=int(0.1*speech_length), max_length=int(0.8*speech_length))[0]["summary_text"]
     print(summary)
     if result.reason == speechsdk.ResultReason.RecognizedSpeech:
-        return result.text, tokens_data, sentiments, summary
+        return result.text, tokens_data, sentiments, summary, ners
     else:
         return "", "", "", ""
 
@@ -122,8 +130,8 @@ class App:
         mp4_data.export("sample.wav", format="wav")
 
         # Call model
-        transcript, token_times, sentiment, summary = azure_batch_stt("sample.wav")
-        return jsonify({"transcript": transcript, "token_times":token_times, "sentiment": sentiment, "summary": summary})
+        transcript, token_times, sentiment, summary, ners = azure_batch_stt("sample.wav")
+        return jsonify({"transcript": transcript, "token_times":token_times, "sentiment": sentiment, "summary": summary, "ners": ners})
 
     @staticmethod
     def catch(*args, **kwargs):
