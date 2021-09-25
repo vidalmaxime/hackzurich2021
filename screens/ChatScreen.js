@@ -9,7 +9,6 @@ import {
 	TouchableWithoutFeedback,
 	Image,
 	TouchableOpacity,
-	ImageBackground,
 	Platform,
 } from 'react-native';
 import { Avatar } from 'react-native-elements';
@@ -18,7 +17,9 @@ import { db, auth } from '../firebase';
 import * as firebase from 'firebase';
 import { Audio } from 'expo-av';
 import AudioPlayer from '../components/AudioPlayer';
+import SummaryInfo from '../components/SummaryInfo';
 import uuid from 'react-native-uuid';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const ChatScreen = ({ navigation, route }) => {
 	const [messages, setMessages] = useState([]);
@@ -47,8 +48,7 @@ const ChatScreen = ({ navigation, route }) => {
 	useLayoutEffect(() => {
 		navigation.setOptions({
 			headerShown: true,
-			headerTransparent: true,
-			headerTintColor: 'white',
+			headerTintColor: '#4158D0',
 			// headerTitle: () => (
 			// 	<View>
 			// 		<Text>{route.params.chatName}</Text>
@@ -141,36 +141,6 @@ const ChatScreen = ({ navigation, route }) => {
 		}
 	}
 
-	function showApiInfo(data, origin) {
-		if (data.dataApi) {
-			const dataApi = JSON.parse(data.dataApi);
-			const sentimentAnalysis = dataApi.summary;
-			return (
-				<View
-					style={
-						origin === 'receiver'
-							? styles.apiSummaryContainerReceiver
-							: styles.apiSummaryContainerSender
-					}
-				>
-					<Text style={styles.apiSummary}> {sentimentAnalysis} </Text>
-				</View>
-			);
-		} else {
-			return (
-				<View
-					style={
-						origin === 'receiver'
-							? styles.apiLoadingContainerReceiver
-							: styles.apiLoadingContainerSender
-					}
-				>
-					<Text style={styles.apiSummaryLoading}> Loading... </Text>
-				</View>
-			);
-		}
-	}
-
 	return (
 		<SafeAreaView style={styles.container}>
 			<KeyboardAvoidingView
@@ -178,26 +148,41 @@ const ChatScreen = ({ navigation, route }) => {
 				style={styles.containerAvoid}
 				keyboardVerticalOffset={90}
 			>
-				<ImageBackground
-					source={require('../assets/background.png')}
-					resizeMode='cover'
-					style={styles.image}
-				>
-					<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-						<>
-							<ScrollView
-								contentContainerStyle={{
-									paddingTop: 15,
-								}}
-								ref={scrollViewRef}
-							>
-								{messages
-									.slice(0)
-									.reverse()
-									.map(({ id, data }) =>
-										data.email === auth.currentUser.email ? (
-											<View style={styles.containerAudioText} key={id}>
-												<View style={styles.sender}>
+				<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+					<>
+						<ScrollView
+							contentContainerStyle={{
+								paddingTop: 15,
+							}}
+							ref={scrollViewRef}
+						>
+							{messages
+								.slice(0)
+								.reverse()
+								.map(({ id, data }) => {
+									// if (data.dataApi) {
+									// 	const sentiments = data.dataApi.sentiments;
+									// 	const nbPhrases = sentiments.length;
+									// 	const colors = [];
+									// 	sentiments.forEach((item, index) => {
+									// 		if (item[0]['score'] < 0.33) {
+									// 			colors.push('#4158D0');
+									// 		} else if (item[0]['score'] < 0.66) {
+									// 			colors.push('#C850C0');
+									// 		} else {
+									// 			colors.pusg('#FFCC70');
+									// 		}
+									// 	});
+									// }
+									return data.email === auth.currentUser.email ? (
+										<View style={styles.containerAudioText} key={id}>
+											<View>
+												<LinearGradient
+													colors={['#4158D0', '#C850C0']}
+													start={{ x: 0, y: 0 }}
+													end={{ x: 1, y: 0 }}
+													style={styles.sender}
+												>
 													<Avatar
 														rounded
 														source={{ uri: data.photoURL }}
@@ -205,47 +190,61 @@ const ChatScreen = ({ navigation, route }) => {
 													/>
 
 													<AudioPlayer id={data.fileId} />
-												</View>
-												{showApiInfo(data, 'sender')}
+													<Text style={styles.senderTimestamp}>
+														{data.timestamp
+															?.toDate()
+															.toLocaleString('en-GB', { timeZone: 'UTC' })}
+													</Text>
+												</LinearGradient>
 											</View>
-										) : (
-											<View style={styles.containerAudioText} key={id}>
-												<View style={styles.receiver}>
-													<Avatar
-														rounded
-														source={{ uri: data.photoURL }}
-														size='medium'
-													/>
 
-													<AudioPlayer id={data.fileId} />
-												</View>
-												{showApiInfo(data, 'receiver')}
+											<SummaryInfo data={data} origin={'sender'} />
+										</View>
+									) : (
+										<View style={styles.containerAudioText} key={id}>
+											<View style={styles.receiver}>
+												<Avatar
+													rounded
+													source={{ uri: data.photoURL }}
+													size='medium'
+												/>
+
+												<AudioPlayer id={data.fileId} />
+												<Text style={styles.receiverName}>
+													{data.displayName}
+												</Text>
+												<Text style={styles.receiverTimestamp}>
+													{data.timestamp
+														?.toDate()
+														.toLocaleString('en-GB', { timeZone: 'UTC' })}
+												</Text>
 											</View>
-										)
-									)}
-							</ScrollView>
+											<SummaryInfo data={data} origin={'receiver'} />
+										</View>
+									);
+								})}
+						</ScrollView>
 
-							<TouchableOpacity
-								activeOpacity={0.5}
-								onPressIn={startRecording}
-								onPressOut={stopRecording}
-								style={styles.containerRecord}
-							>
-								{recording ? (
-									<Image
-										style={styles.micActivated}
-										source={require('../assets/microphone.png')}
-									/>
-								) : (
-									<Image
-										style={styles.micDeactivated}
-										source={require('../assets/microphone.png')}
-									/>
-								)}
-							</TouchableOpacity>
-						</>
-					</TouchableWithoutFeedback>
-				</ImageBackground>
+						<TouchableOpacity
+							activeOpacity={0.5}
+							onPressIn={startRecording}
+							onPressOut={stopRecording}
+							style={styles.containerRecord}
+						>
+							{recording ? (
+								<Image
+									style={styles.micActivated}
+									source={require('../assets/logo.png')}
+								/>
+							) : (
+								<Image
+									style={styles.micDeactivated}
+									source={require('../assets/logo.png')}
+								/>
+							)}
+						</TouchableOpacity>
+					</>
+				</TouchableWithoutFeedback>
 			</KeyboardAvoidingView>
 		</SafeAreaView>
 	);
@@ -263,10 +262,7 @@ const styles = StyleSheet.create({
 	containerAvoid: {
 		flex: 1,
 	},
-	image: {
-		flex: 1,
-		justifyContent: 'center',
-	},
+
 	footer: {
 		flexDirection: 'row',
 		alignItems: 'center',
@@ -280,7 +276,6 @@ const styles = StyleSheet.create({
 		margin: '5%',
 		marginBottom: '2%',
 		alignSelf: 'flex-start',
-
 		backgroundColor: 'rgba(0, 0, 0, 0.35)',
 		borderRadius: 30,
 
@@ -291,6 +286,7 @@ const styles = StyleSheet.create({
 		},
 		shadowColor: 'black',
 		shadowOpacity: 1,
+		position: 'relative',
 	},
 
 	sender: {
@@ -313,18 +309,16 @@ const styles = StyleSheet.create({
 		shadowOpacity: 1,
 	},
 	micActivated: {
-		width: 100,
-		height: 100,
+		width: 180,
+		height: 180,
 		borderRadius: 50,
-		marginBottom: 40,
-		backgroundColor: 'rgba(0, 0, 0, 0.4)',
+		marginBottom: 25,
 	},
 	micDeactivated: {
-		width: 100,
-		height: 100,
+		width: 150,
+		height: 150,
 		borderRadius: 50,
 		marginBottom: 40,
-		backgroundColor: 'rgba(0, 0, 0, 0.6)',
 	},
 	containerRecord: {
 		display: 'flex',
@@ -334,92 +328,25 @@ const styles = StyleSheet.create({
 	containerAudioText: {
 		flexDirection: 'column',
 	},
-	apiSummaryContainerReceiver: {
-		flexDirection: 'row',
-		width: '80%',
-		padding: '5%',
-		margin: '5%',
-		marginTop: 0,
-		alignSelf: 'flex-start',
 
-		backgroundColor: 'rgba(0, 0, 0, 0.35)',
-		borderRadius: 30,
-
-		// iOS only
-		shadowOffset: {
-			width: 2,
-			height: 2,
-		},
-		shadowColor: 'black',
-		shadowOpacity: 1,
-	},
-	apiSummaryContainerSender: {
-		flexDirection: 'row-reverse',
-		width: '80%',
-		padding: '5%',
-		margin: '5%',
-		marginTop: 0,
-		alignSelf: 'flex-end',
-
-		backgroundColor: 'rgba(0, 0, 0, 0.2)',
-		borderRadius: 30,
-
-		// iOS only
-		shadowOffset: {
-			width: 2,
-			height: 2,
-		},
-		shadowColor: 'black',
-		shadowOpacity: 1,
-	},
-
-	apiLoadingContainerSender: {
-		flexDirection: 'row-reverse',
-		width: '30%',
-		padding: '5%',
-		margin: '5%',
-		marginTop: 0,
-		alignSelf: 'flex-end',
-		justifyContent: 'center',
-
-		backgroundColor: 'rgba(0, 0, 0, 0.2)',
-		borderRadius: 30,
-
-		// iOS only
-		shadowOffset: {
-			width: 2,
-			height: 2,
-		},
-		shadowColor: 'black',
-		shadowOpacity: 1,
-	},
-
-	apiLoadingContainerReceiver: {
-		flexDirection: 'row',
-		width: '30%',
-		padding: '5%',
-		margin: '5%',
-		marginTop: 0,
-		alignSelf: 'flex-start',
-		justifyContent: 'center',
-
-		backgroundColor: 'rgba(0, 0, 0, 0.2)',
-		borderRadius: 30,
-
-		// iOS only
-		shadowOffset: {
-			width: 2,
-			height: 2,
-		},
-		shadowColor: 'black',
-		shadowOpacity: 1,
-	},
-
-	apiSummary: {
+	receiverName: {
+		position: 'absolute',
+		bottom: 3,
+		left: 30,
 		color: 'white',
 	},
-
-	apiSummaryLoading: {
+	receiverTimestamp: {
+		position: 'absolute',
+		bottom: 3,
+		right: 20,
 		color: 'white',
+		fontSize: 8,
+	},
+	senderTimestamp: {
+		position: 'absolute',
+		bottom: 3,
+		left: 20,
+		color: 'white',
+		fontSize: 8,
 	},
 });
