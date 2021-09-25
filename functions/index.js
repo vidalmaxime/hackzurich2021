@@ -22,7 +22,7 @@ exports.processAudio = functions.storage.object().onFinalize(async (object) => {
 	data.append('audiofile', fs.createReadStream(tempFilePath));
 	const config = {
 		method: 'post',
-		url: 'http://2652-128-178-84-41.ngrok.io/speech2text',
+		url: 'http://2967-128-178-84-41.ngrok.io/speech2text',
 		headers: {
 			...data.getHeaders(),
 		},
@@ -31,6 +31,18 @@ exports.processAudio = functions.storage.object().onFinalize(async (object) => {
 	axios(config)
 		.then(function (response) {
 			console.log(JSON.stringify(response.data));
+			const db = admin.firestore();
+			const chatsRef = db.collection('chats');
+			const allChats = chatsRef.get().then((snapshot) => {
+				snapshot.forEach((doc) => {
+					console.log(doc.id, '=>', doc.data());
+					console.log(fileName);
+					const q = db
+						.collection('chats/${doc.id}/messages')
+						.where('fileId', '==', fileName.split('.')[0]);
+					console.log(q);
+				});
+			});
 		})
 		.catch(function (error) {
 			console.log(error);

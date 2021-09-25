@@ -7,31 +7,81 @@ const AudioPlayer = ({ id }) => {
 	const soundObject = useRef(new Audio.Sound());
 	const [playing, setPlaying] = useState(false);
 
-	useEffect(() => {
+	// useEffect(() => {
+	// 	const downloadAudio = async (id) => {
+	// 		console.log(id);
+	// 		const uri = await firebase.storage().ref(`${id}.m4a`).getDownloadURL();
+
+	// 		// The rest of this plays the audio
+	// 		try {
+	// 			await soundObject.current.loadAsync({ uri });
+	// 		} catch (error) {
+	// 			console.log('error:', error);
+	// 		}
+	// 	};
+	// 	downloadAudio(id);
+	// }, []);
+
+	function playbackStatusUpdate(playbackStatus) {
+		if (playbackStatus.didJustFinish) {
+			soundObject.current.setPositionAsync(0);
+			setPlaying(false);
+			soundObject.current.pauseAsync().catch((e) => console.log('error:', e));
+		}
+	}
+
+	async function startPlaying() {
 		const downloadAudio = async (id) => {
 			console.log(id);
 			const uri = await firebase.storage().ref(`${id}.m4a`).getDownloadURL();
 
-			console.log('uri:', uri);
-
 			// The rest of this plays the audio
 			try {
 				await soundObject.current.loadAsync({ uri });
+				soundObject.current.setOnPlaybackStatusUpdate(playbackStatusUpdate);
 			} catch (error) {
 				console.log('error:', error);
 			}
 		};
-		downloadAudio(id);
-	}, []);
 
-	function startPlaying() {
-		soundObject.current.playAsync();
-		setPlaying(true);
+		const result = await soundObject.current
+			.getStatusAsync()
+			.catch((e) => console.log('error:', e));
+		try {
+			if (result.isLoaded) {
+				if (result.isPlaying === false) {
+					soundObject.current
+						.playAsync()
+						.catch((e) => console.log('error:', e));
+					setPlaying(true);
+				}
+			} else {
+				await downloadAudio(id);
+				const result = await soundObject.current
+					.getStatusAsync()
+					.catch((e) => console.log('error:', e));
+				if (result.isPlaying === false) {
+					soundObject.current
+						.playAsync()
+						.catch((e) => console.log('error:', e));
+					setPlaying(true);
+				}
+			}
+		} catch (error) {}
 	}
 
-	function stopPlaying() {
-		soundObject.current.pauseAsync();
-		setPlaying(false);
+	async function stopPlaying() {
+		try {
+			const result = await soundObject.current.getStatusAsync();
+			if (result.isLoaded) {
+				if (result.isPlaying === true) {
+					soundObject.current
+						.pauseAsync()
+						.catch((e) => console.log('error:', e));
+					setPlaying(false);
+				}
+			}
+		} catch (error) {}
 	}
 
 	return !playing ? (
