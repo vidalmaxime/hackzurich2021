@@ -1,32 +1,29 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { StyleSheet, TouchableOpacity, Image, View } from 'react-native';
 import { Audio } from 'expo-av';
 import * as firebase from 'firebase';
 
+const PROGRESS_INTERVAL = 100;
+
 const AudioPlayer = ({ id }) => {
 	const soundObject = useRef(new Audio.Sound());
+	const soundDuration = useRef(null);
+	const [barPosition, setBarPosition] = useState(200);
 	const [playing, setPlaying] = useState(false);
-
-	// useEffect(() => {
-	// 	const downloadAudio = async (id) => {
-	// 		console.log(id);
-	// 		const uri = await firebase.storage().ref(`${id}.m4a`).getDownloadURL();
-
-	// 		// The rest of this plays the audio
-	// 		try {
-	// 			await soundObject.current.loadAsync({ uri });
-	// 		} catch (error) {
-	// 			console.log('error:', error);
-	// 		}
-	// 	};
-	// 	downloadAudio(id);
-	// }, []);
 
 	function playbackStatusUpdate(playbackStatus) {
 		if (playbackStatus.didJustFinish) {
 			soundObject.current.setPositionAsync(0);
 			setPlaying(false);
 			soundObject.current.pauseAsync().catch((e) => console.log('error:', e));
+		}
+		if (soundDuration.current) {
+			setBarPosition(
+				200 -
+					Math.floor(
+						(playbackStatus.positionMillis / soundDuration.current) * 200
+					)
+			);
 		}
 	}
 
@@ -38,6 +35,7 @@ const AudioPlayer = ({ id }) => {
 			// The rest of this plays the audio
 			try {
 				await soundObject.current.loadAsync({ uri });
+				soundObject.current.setProgressUpdateIntervalAsync(PROGRESS_INTERVAL);
 				soundObject.current.setOnPlaybackStatusUpdate(playbackStatusUpdate);
 			} catch (error) {
 				console.log('error:', error);
@@ -60,6 +58,8 @@ const AudioPlayer = ({ id }) => {
 				const result = await soundObject.current
 					.getStatusAsync()
 					.catch((e) => console.log('error:', e));
+				console.log(result.playableDurationMillis);
+				soundDuration.current = result.playableDurationMillis;
 				if (result.isPlaying === false) {
 					soundObject.current
 						.playAsync()
@@ -104,7 +104,15 @@ const AudioPlayer = ({ id }) => {
 				style={waveformStyle({ playing: false })}
 				source={require('../assets/waveform.png')}
 			/>
-			<View style={styles.barOff}></View>
+			<View
+				style={{
+					position: 'absolute',
+					width: 5,
+					height: 30,
+					backgroundColor: 'grey',
+					right: barPosition,
+				}}
+			></View>
 		</TouchableOpacity>
 	) : (
 		<TouchableOpacity
@@ -120,7 +128,15 @@ const AudioPlayer = ({ id }) => {
 				style={waveformStyle({ playing: true })}
 				source={require('../assets/waveform.png')}
 			/>
-			<View style={styles.bar}></View>
+			<View
+				style={{
+					position: 'absolute',
+					width: 5,
+					height: 30,
+					backgroundColor: '#505050',
+					right: barPosition,
+				}}
+			></View>
 		</TouchableOpacity>
 	);
 };
@@ -139,21 +155,5 @@ const styles = StyleSheet.create({
 	playButton: {
 		width: 40,
 		height: 40,
-	},
-
-	bar: {
-		position: 'absolute',
-		width: 5,
-		height: 30,
-		backgroundColor: 'black',
-		right: 0,
-	},
-
-	barOff: {
-		position: 'absolute',
-		width: 5,
-		height: 30,
-		backgroundColor: 'grey',
-		right: 0,
 	},
 });

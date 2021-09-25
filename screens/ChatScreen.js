@@ -179,6 +179,9 @@ const ChatScreen = ({ navigation, route }) => {
 												colors.push('#FFCC70');
 											}
 										});
+										if (colors.length === 1) {
+											colors.push(colors[0]);
+										}
 									}
 									return data.email === auth.currentUser.email ? (
 										<View style={styles.containerAudioText} key={id}>
