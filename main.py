@@ -10,6 +10,8 @@ from pyngrok import ngrok
 import azure.cognitiveservices.speech as speechsdk
 from transformers import pipeline
 
+from pydub import AudioSegment
+
 
 
 def azure_batch_stt(filename: str):
@@ -43,22 +45,26 @@ def azure_batch_stt(filename: str):
     for word in words:
         print(f"{word['Word']}\t{word['Offset']}\t{word['Duration']}")
         tokens_data.append({"word": word['Word'], "offset": word['Offset'], "duration": word['Duration']})
+
     sentiment_classifier = pipeline('sentiment-analysis')
-    sentiment = sentiment_classifier(result.text)
-    print(sentiment)
+    speech_utterances = result.text.split(".")
+
+
+    sentiments = [sentiment_classifier(speech_utterance) for speech_utterance in speech_utterances]
+    print(sentiments)
 
     summarizer = pipeline('summarization')
     summary = summarizer(result.text, min_length=5)
     print(summary)
     if result.reason == speechsdk.ResultReason.RecognizedSpeech:
-        return result.text, tokens_data, sentiment, summary
+        return result.text, tokens_data, sentiments, summary
     else:
         return "", "", "", ""
 
 
 def create_app(*args, ) -> Flask:
     """ Entry point. Create app without autostart. """
-    app = App(port=5000, start=True)  # start=False for gunicorn
+    app = App(port=4030, start=True)  # start=False for gunicorn
     return app.server
 
 
@@ -107,7 +113,12 @@ class App:
         data = request.files["audiofile"]
         print(data)
         print("Received audio sample")
-        data.save("sample.wav")
+
+        # Convert m4a to wav
+        data.save("sample.m4a")
+        mp4_data = AudioSegment.from_file("sample.m4a")
+        mp4_data.export("sample.wav", format="wav")
+
         # Call model
         transcript, token_times, sentiment, summary = azure_batch_stt("sample.wav")
         return jsonify({"transcript": transcript, "token_times":token_times, "sentiment": sentiment, "summary": summary})
