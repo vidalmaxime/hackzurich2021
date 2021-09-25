@@ -142,10 +142,7 @@ const ChatScreen = ({ navigation, route }) => {
 										<Avatar
 											rounded
 											source={{ uri: data.photoURL }}
-											position='absolute'
-											bottom={-10}
-											left={20}
-											size={20}
+											size='medium'
 										/>
 										<AudioPlayer id={data.fileId} />
 									</View>
@@ -154,14 +151,12 @@ const ChatScreen = ({ navigation, route }) => {
 										<Avatar
 											rounded
 											source={{ uri: data.photoURL }}
-											position='absolute'
-											bottom={-10}
-											right={20}
-											size={20}
+											size='medium'
 										/>
 
-										<AudioPlayer id={data.fileId} />
-										<Text style={styles.receiverName}>{data.displayName}</Text>
+										<AudioPlayer
+											id={data.fileId}
+										/>
 									</View>
 								)
 							)}
@@ -175,12 +170,12 @@ const ChatScreen = ({ navigation, route }) => {
 						>
 							{recording ? (
 								<Image
-									style={styles.recording}
+									style={styles.micActivated}
 									source={require('../assets/record.png')}
 								/>
 							) : (
 								<Image
-									style={styles.notRecording}
+									style={styles.micDeactivated}
 									source={require('../assets/record.png')}
 								/>
 							)}
@@ -207,38 +202,51 @@ const styles = StyleSheet.create({
 		width: '100%',
 		padding: 20,
 	},
-	textInput: {
-		bottom: 0,
-		marginRight: 15,
-		flex: 1,
-		height: 40,
-		borderRadius: 30,
-		padding: 10,
-		backgroundColor: '#c5e3cd',
-	},
 	receiver: {
-		padding: 15,
+		flexDirection: 'row',
+		width: '80%',
+		padding: '5%',
+		margin: '5%',
 		alignSelf: 'flex-start',
-		maxWidth: '80%',
-		position: 'relative',
-		marginBottom: 20,
+
+		backgroundColor: 'powderblue',
+		borderRadius: 20,
+
+		// iOS only
+		shadowOffset: {
+			width: 20,
+			height: 20,
+		},
+		shadowColor: "black",
+		shadowOpacity: 1.,
 	},
 	sender: {
-		padding: 15,
+		flexDirection: 'row-reverse',
+		width: '80%',
+		padding: '5%',
+		margin: '5%',
 		alignSelf: 'flex-end',
-		maxWidth: '80%',
-		position: 'relative',
-		marginBottom: 20,
+
+		backgroundColor: 'steelblue',
+		borderRadius: 20,
+		
+		// iOS only
+		shadowOffset: {
+			width: 20,
+			height: 20,
+		},
+		shadowColor: "black",
+		shadowOpacity: 1.,
 	},
 	receiverName: {
-		color: 'grey',
+		color: 'black',
 		fontSize: 10,
 	},
 	receiverText: {
 		color: 'black',
 		fontSize: 15,
 	},
-	recording: {
+	micActivated: {
 		width: 100,
 		height: 100,
 		borderRadius: 50,
@@ -246,13 +254,14 @@ const styles = StyleSheet.create({
 		borderColor: 'red',
 		marginBottom: 40,
 	},
-	notRecording: {
+	micDeactivated: {
 		width: 100,
 		height: 100,
 		borderRadius: 50,
 		borderWidth: 5,
 		borderColor: 'black',
 		marginBottom: 40,
+		backgroundColor: "rgba(0, 0, 0, 0.4)",
 	},
 	containerRecord: {
 		display: 'flex',
