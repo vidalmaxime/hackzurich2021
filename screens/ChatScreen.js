@@ -1,5 +1,4 @@
 import React, { useLayoutEffect, useState } from 'react';
-import { Platform } from 'react-native';
 import { ScrollView } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native';
 import {
@@ -10,6 +9,8 @@ import {
 	TouchableWithoutFeedback,
 	Image,
 	TouchableOpacity,
+	ImageBackground, 
+	Platform
 } from 'react-native';
 import { Avatar, Button } from 'react-native-elements';
 import { Keyboard } from 'react-native';
@@ -129,6 +130,8 @@ const ChatScreen = ({ navigation, route }) => {
 				style={styles.containerAvoid}
 				keyboardVerticalOffset={90}
 			>
+			<ImageBackground source={require('../assets/CelestialGradient.png')} resizeMode='cover' style={styles.image}>
+			{/* <LinearGradient colors={['black', 'white']} style={{flex:1}}> */}
 				<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 					<>
 						<ScrollView
@@ -171,17 +174,19 @@ const ChatScreen = ({ navigation, route }) => {
 							{recording ? (
 								<Image
 									style={styles.micActivated}
-									source={require('../assets/record.png')}
+									source={require('../assets/microphone.png')}
 								/>
 							) : (
 								<Image
 									style={styles.micDeactivated}
-									source={require('../assets/record.png')}
+									source={require('../assets/microphone.png')}
 								/>
 							)}
 						</TouchableOpacity>
 					</>
 				</TouchableWithoutFeedback>
+			</ImageBackground>
+			{/* </LinearGradient> */}
 			</KeyboardAvoidingView>
 		</SafeAreaView>
 	);
@@ -196,6 +201,11 @@ const styles = StyleSheet.create({
 	containerAvoid: {
 		flex: 1,
 	},
+	image: {
+		flex:1,
+		justifyContent: 'center',
+
+	},
 	footer: {
 		flexDirection: 'row',
 		alignItems: 'center',
@@ -209,8 +219,8 @@ const styles = StyleSheet.create({
 		margin: '5%',
 		alignSelf: 'flex-start',
 
-		backgroundColor: 'powderblue',
-		borderRadius: 20,
+		backgroundColor: 'rgba(0, 0, 0, 0.25)',
+		borderRadius: 30,
 
 		// iOS only
 		shadowOffset: {
@@ -227,8 +237,8 @@ const styles = StyleSheet.create({
 		margin: '5%',
 		alignSelf: 'flex-end',
 
-		backgroundColor: 'steelblue',
-		borderRadius: 20,
+		backgroundColor: 'rgba(0, 0, 0, 0.5)',
+		borderRadius: 30,
 		
 		// iOS only
 		shadowOffset: {
@@ -238,30 +248,19 @@ const styles = StyleSheet.create({
 		shadowColor: "black",
 		shadowOpacity: 1.,
 	},
-	receiverName: {
-		color: 'black',
-		fontSize: 10,
-	},
-	receiverText: {
-		color: 'black',
-		fontSize: 15,
-	},
 	micActivated: {
 		width: 100,
 		height: 100,
 		borderRadius: 50,
-		borderWidth: 5,
-		borderColor: 'red',
 		marginBottom: 40,
+		backgroundColor: "rgba(0, 0, 0, 0.4)",
 	},
 	micDeactivated: {
 		width: 100,
 		height: 100,
 		borderRadius: 50,
-		borderWidth: 5,
-		borderColor: 'black',
 		marginBottom: 40,
-		backgroundColor: "rgba(0, 0, 0, 0.4)",
+		backgroundColor: "rgba(0, 0, 0, 0.6)",
 	},
 	containerRecord: {
 		display: 'flex',
