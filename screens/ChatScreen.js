@@ -50,16 +50,14 @@ const ChatScreen = ({ navigation, route }) => {
 	useLayoutEffect(() => {
 		navigation.setOptions({
 			headerTitle: () => (
-				<View
-					style={{ marginLeft: 20, flexDirection: 'row', alignItems: 'center' }}
-				>
+				<View style={styles.header}>
 					<Avatar
 						rounded
 						source={{
 							uri: 'https://www.seekpng.com/png/full/110-1100707_person-avatar-placeholder.png',
 						}}
+						size='large'
 					/>
-					<Text> {route.params.chatName} </Text>
 				</View>
 			),
 		});
@@ -225,6 +223,11 @@ const ChatScreen = ({ navigation, route }) => {
 export default ChatScreen;
 
 const styles = StyleSheet.create({
+	header: {
+		alignItems: 'center',
+		alignSelf: 'center',
+		backgroundColor: 'black'
+	},
 	container: {
 		flex: 1,
 	},
@@ -291,27 +294,6 @@ const styles = StyleSheet.create({
 		borderRadius: 50,
 		marginBottom: 40,
 		backgroundColor: "rgba(0, 0, 0, 0.6)",
-	},
-	containerRecord: {
-		display: 'flex',
-		alignItems: 'center',
-		justifyContent: 'center',
-	},
-	recording: {
-		width: 100,
-		height: 100,
-		borderRadius: 50,
-		borderWidth: 5,
-		borderColor: 'red',
-		marginBottom: 40,
-	},
-	notRecording: {
-		width: 100,
-		height: 100,
-		borderRadius: 50,
-		borderWidth: 5,
-		borderColor: 'black',
-		marginBottom: 40,
 	},
 	containerRecord: {
 		display: 'flex',
