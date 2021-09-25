@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useLayoutEffect, useState, useEffect, useRef } from 'react';
 import { ScrollView } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native';
 import {
@@ -10,7 +10,8 @@ import {
 	Image,
 	TouchableOpacity,
 	ImageBackground, 
-	Platform
+	Platform,
+	SliderComponent,
 } from 'react-native';
 import { Avatar, Button } from 'react-native-elements';
 import { Keyboard } from 'react-native';
@@ -23,6 +24,8 @@ import uuid from 'react-native-uuid';
 const ChatScreen = ({ navigation, route }) => {
 	const [messages, setMessages] = useState([]);
 	const [recording, setRecording] = React.useState();
+	const scrollViewRef = useRef(null);
+	const abortedRecord = useRef(false);
 
 	function sendAudioMessage(id) {
 		console.log('hello');
@@ -37,6 +40,12 @@ const ChatScreen = ({ navigation, route }) => {
 			photoURL: auth.currentUser.photoURL,
 		});
 	}
+
+	useEffect(() => {
+		if (scrollViewRef.current !== null) {
+			scrollViewRef.current.scrollToEnd();
+		}
+	}, [messages]);
 
 	useLayoutEffect(() => {
 		navigation.setOptions({
@@ -74,6 +83,12 @@ const ChatScreen = ({ navigation, route }) => {
 		return unsubscribe;
 	}, [route]);
 
+	function sleep(ms) {
+		return new Promise((resolve) => {
+			setTimeout(resolve, ms);
+		});
+	}
+
 	async function startRecording() {
 		try {
 			console.log('Requesting permissions..');
@@ -86,8 +101,15 @@ const ChatScreen = ({ navigation, route }) => {
 			const { recording } = await Audio.Recording.createAsync(
 				Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY
 			);
-			setRecording(recording);
-			console.log('Recording started');
+			if (abortedRecord.current) {
+				console.log('in stop');
+				await sleep(300);
+				await recording.stopAndUnloadAsync();
+				abortedRecord.current = false;
+			} else {
+				setRecording(recording);
+				console.log('Recording started');
+			}
 		} catch (err) {
 			console.error('Failed to start recording', err);
 		}
@@ -95,31 +117,35 @@ const ChatScreen = ({ navigation, route }) => {
 
 	async function stopRecording() {
 		console.log('Stopping recording..');
-		setRecording(undefined);
-		await recording.stopAndUnloadAsync();
-		const uri = recording.getURI();
-		console.log('Recording stopped and stored at', uri);
-		const response = await fetch(uri);
-		const blob = await response.blob();
-		if (blob != null) {
-			const uriParts = uri.split('.');
-			const fileType = uriParts[uriParts.length - 1];
-			const nameOfFile = uuid.v4();
+		if (recording !== undefined) {
+			setRecording(undefined);
+			await recording.stopAndUnloadAsync();
+			const uri = recording.getURI();
+			console.log('Recording stopped and stored at', uri);
+			const response = await fetch(uri);
+			const blob = await response.blob();
+			if (blob != null) {
+				const uriParts = uri.split('.');
+				const fileType = uriParts[uriParts.length - 1];
+				const nameOfFile = uuid.v4();
 
-			firebase
-				.storage()
-				.ref()
-				.child(`${nameOfFile}.${fileType}`)
-				.put(blob, {
-					contentType: `audio/${fileType}`,
-				})
-				.then(() => {
-					console.log('Sent!');
-					sendAudioMessage(nameOfFile);
-				})
-				.catch((e) => console.log('error:', e));
+				firebase
+					.storage()
+					.ref()
+					.child(`${nameOfFile}.${fileType}`)
+					.put(blob, {
+						contentType: `audio/${fileType}`,
+					})
+					.then(() => {
+						console.log('Sent!');
+						sendAudioMessage(nameOfFile);
+					})
+					.catch((e) => console.log('error:', e));
+			} else {
+				console.log('error with blob');
+			}
 		} else {
-			console.log('error with blob');
+			abortedRecord.current = true;
 		}
 	}
 
@@ -138,8 +164,12 @@ const ChatScreen = ({ navigation, route }) => {
 							contentContainerStyle={{
 								paddingTop: 15,
 							}}
+							ref={scrollViewRef}
 						>
-							{messages.map(({ id, data }) =>
+							{messages
+								.slice(0)
+								.reverse()
+								.map(({ id, data }) =>
 								data.email === auth.currentUser.email ? (
 									<View key={id} style={styles.sender}>
 										<Avatar
@@ -261,6 +291,27 @@ const styles = StyleSheet.create({
 		borderRadius: 50,
 		marginBottom: 40,
 		backgroundColor: "rgba(0, 0, 0, 0.6)",
+	},
+	containerRecord: {
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
+	recording: {
+		width: 100,
+		height: 100,
+		borderRadius: 50,
+		borderWidth: 5,
+		borderColor: 'red',
+		marginBottom: 40,
+	},
+	notRecording: {
+		width: 100,
+		height: 100,
+		borderRadius: 50,
+		borderWidth: 5,
+		borderColor: 'black',
+		marginBottom: 40,
 	},
 	containerRecord: {
 		display: 'flex',
