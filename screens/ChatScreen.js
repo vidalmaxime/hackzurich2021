@@ -160,25 +160,30 @@ const ChatScreen = ({ navigation, route }) => {
 								.slice(0)
 								.reverse()
 								.map(({ id, data }) => {
-									// if (data.dataApi) {
-									// 	const sentiments = data.dataApi.sentiments;
-									// 	const nbPhrases = sentiments.length;
-									// 	const colors = [];
-									// 	sentiments.forEach((item, index) => {
-									// 		if (item[0]['score'] < 0.33) {
-									// 			colors.push('#4158D0');
-									// 		} else if (item[0]['score'] < 0.66) {
-									// 			colors.push('#C850C0');
-									// 		} else {
-									// 			colors.pusg('#FFCC70');
-									// 		}
-									// 	});
-									// }
+									let colors = ['#989898', '#989898'];
+									const dataApi = JSON.parse(data.dataApi);
+									if (dataApi) {
+										const sentiments = dataApi.sentiment;
+										colors = [];
+										sentiments.forEach((item, index) => {
+											let score = item[0]['score'];
+											if (item[0]['label'] === 'NEGATIVE') {
+												score = 1 - score;
+											}
+											if (score < 0.33) {
+												colors.push('#4158D0');
+											} else if (score < 0.66) {
+												colors.push('#C850C0');
+											} else {
+												colors.push('#FFCC70');
+											}
+										});
+									}
 									return data.email === auth.currentUser.email ? (
 										<View style={styles.containerAudioText} key={id}>
 											<View>
 												<LinearGradient
-													colors={['#4158D0', '#C850C0']}
+													colors={colors}
 													start={{ x: 0, y: 0 }}
 													end={{ x: 1, y: 0 }}
 													style={styles.sender}
