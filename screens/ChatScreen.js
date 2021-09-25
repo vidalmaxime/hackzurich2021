@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
 		margin: '5%',
 		alignSelf: 'flex-start',
 
-		backgroundColor: 'rgba(0, 0, 0, 0.25)',
+		backgroundColor: 'rgba(0, 0, 0, 0.2)',
 		borderRadius: 30,
 
 		// iOS only
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
 		margin: '5%',
 		alignSelf: 'flex-end',
 
-		backgroundColor: 'rgba(0, 0, 0, 0.5)',
+		backgroundColor: 'rgba(0, 0, 0, 0.35)',
 		borderRadius: 30,
 		
 		// iOS only
