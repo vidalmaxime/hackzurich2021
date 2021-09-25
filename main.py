@@ -8,6 +8,7 @@ from flask_cors import CORS
 from pyngrok import ngrok
 
 import azure.cognitiveservices.speech as speechsdk
+from transformers import pipeline
 
 
 
@@ -42,11 +43,17 @@ def azure_batch_stt(filename: str):
     for word in words:
         print(f"{word['Word']}\t{word['Offset']}\t{word['Duration']}")
         tokens_data.append({"word": word['Word'], "offset": word['Offset'], "duration": word['Duration']})
+    sentiment_classifier = pipeline('sentiment-analysis')
+    sentiment = sentiment_classifier(result.text)
+    print(sentiment)
 
+    summarizer = pipeline('summarization')
+    summary = summarizer(result.text, min_length=5)
+    print(summary)
     if result.reason == speechsdk.ResultReason.RecognizedSpeech:
-        return result.text, tokens_data
+        return result.text, tokens_data, sentiment, summary
     else:
-        return "", ""
+        return "", "", "", ""
 
 
 def create_app(*args, ) -> Flask:
@@ -102,8 +109,8 @@ class App:
         print("Received audio sample")
         data.save("sample.wav")
         # Call model
-        transcript, token_times = azure_batch_stt("sample.wav")
-        return jsonify({"transcript": transcript, "token_times":token_times})
+        transcript, token_times, sentiment, summary = azure_batch_stt("sample.wav")
+        return jsonify({"transcript": transcript, "token_times":token_times, "sentiment": sentiment, "summary": summary})
 
     @staticmethod
     def catch(*args, **kwargs):
