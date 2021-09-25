@@ -84,22 +84,40 @@ const AudioPlayer = ({ id }) => {
 		} catch (error) {}
 	}
 
+	function waveformStyle(options) {
+		return {
+			width: options.playing ? 200 : 200,
+			height: options.playing ? 50 : 50,
+
+			opacity: options.playing ? 1 : 0.5,
+		};
+	}
+
 	return !playing ? (
-		<TouchableOpacity 
-			activeOpacity={0.5} 
+		<TouchableOpacity
+			activeOpacity={0.5}
 			onPress={startPlaying}
 			style={styles.audioPlayer}
 		>
-			<Image 
-				style={styles.playButton} 
-				source={require('../assets/play.png')} 
+			{/* <Image style={styles.playButton} source={require('../assets/play.png')} /> */}
+			<Image
+				style={waveformStyle({ playing: false })}
+				source={require('../assets/waveform.png')}
 			/>
 		</TouchableOpacity>
 	) : (
-		<TouchableOpacity activeOpacity={0.5} onPress={stopPlaying}>
-			<Image
+		<TouchableOpacity
+			activeOpacity={0.5}
+			onPress={stopPlaying}
+			style={styles.audioPlayer}
+		>
+			{/* <Image
 				style={styles.playButton}
 				source={require('../assets/pause.png')}
+			/> */}
+			<Image
+				style={waveformStyle({ playing: true })}
+				source={require('../assets/waveform.png')}
 			/>
 		</TouchableOpacity>
 	);
@@ -110,8 +128,11 @@ export default AudioPlayer;
 const styles = StyleSheet.create({
 	audioPlayer: {
 		alignSelf: 'center',
+		flexDirection: 'row',
+		justifyContent: 'center',
+		alignItems: 'center',
 	},
-	
+
 	playButton: {
 		width: 40,
 		height: 40,

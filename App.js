@@ -8,19 +8,11 @@ import AddChatScreen from './screens/AddChatScreen';
 import ChatScreen from './screens/ChatScreen';
 
 const Stack = createNativeStackNavigator();
-const globalScreenOptions = {
-	headerStyle: { backgroundColor: '#C7DED2' },
-	headerTitleStyle: { color: 'black' },
-	headerTintColor: 'white',
-};
 
 function App() {
 	return (
 		<NavigationContainer>
-			<Stack.Navigator
-				initialRouteName='Login'
-				screenOptions={globalScreenOptions}
-			>
+			<Stack.Navigator initialRouteName='Login'>
 				<Stack.Screen
 					options={{ title: 'Sign up' }}
 					name='Login'
@@ -36,6 +28,7 @@ function App() {
 				<Stack.Screen
 					options={{
 						title: 'Home',
+						headerTitleAlign: 'center',
 					}}
 					name='Home'
 					component={HomeScreen}
@@ -49,7 +42,7 @@ function App() {
 				/>
 				<Stack.Screen
 					options={{
-						title: 'Chat',
+						title: '',
 					}}
 					name='Chat'
 					component={ChatScreen}
