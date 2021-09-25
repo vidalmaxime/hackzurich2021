@@ -6,13 +6,16 @@ import json
 from flask import request, jsonify, Flask
 from flask_cors import CORS
 from pyngrok import ngrok
+from rake_nltk import Rake
+import nltk
 
 import azure.cognitiveservices.speech as speechsdk
 from transformers import pipeline
 
 from pydub import AudioSegment
 
-
+nltk.download('punkt')
+nltk.download('stopwords')
 
 def azure_batch_stt(filename: str):
     speech_config = speechsdk.SpeechConfig(
@@ -56,7 +59,17 @@ def azure_batch_stt(filename: str):
     # NER
     ner_pipeline = pipeline('ner')
     ners = ner_pipeline(result.text)
+    for ner in ners:
+        ner['start'] = int(ner['start'])
+        ner['end'] = int(ner['end'])
+        ner['score'] = float(ner['score'])
 
+    # Keywords
+    rake_nltk_processor = Rake()
+    rake_nltk_processor.extract_keywords_from_text(result.text)
+    keywords_ranked = rake_nltk_processor.get_ranked_phrases()
+    num_phrases = len(result.text.split('.'))
+    keywords = keywords_ranked[:min(num_phrases, len(keywords_ranked))]
 
     speech_length= len(words)
     print(speech_length)
@@ -67,7 +80,7 @@ def azure_batch_stt(filename: str):
         summary = summarizer(result.text, min_length=int(0.1*speech_length), max_length=int(0.8*speech_length))[0]["summary_text"]
     print(summary)
     if result.reason == speechsdk.ResultReason.RecognizedSpeech:
-        return result.text, tokens_data, sentiments, summary, ners
+        return result.text, tokens_data, sentiments, summary, ners, keywords
     else:
         return "", "", "", ""
 
@@ -130,8 +143,8 @@ class App:
         mp4_data.export("sample.wav", format="wav")
 
         # Call model
-        transcript, token_times, sentiment, summary, ners = azure_batch_stt("sample.wav")
-        return jsonify({"transcript": transcript, "token_times":token_times, "sentiment": sentiment, "summary": summary, "ners": ners})
+        transcript, token_times, sentiment, summary, ners, keywords = azure_batch_stt("sample.wav")
+        return jsonify({"transcript": transcript, "token_times":token_times, "sentiment": sentiment, "summary": summary, "ners": ners, "keywords": keywords})
 
     @staticmethod
     def catch(*args, **kwargs):
