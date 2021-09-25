@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, TouchableOpacity, Image, View } from 'react-native';
 import { Audio } from 'expo-av';
 import * as firebase from 'firebase';
 
@@ -104,6 +104,7 @@ const AudioPlayer = ({ id }) => {
 				style={waveformStyle({ playing: false })}
 				source={require('../assets/waveform.png')}
 			/>
+			<View style={styles.barOff}></View>
 		</TouchableOpacity>
 	) : (
 		<TouchableOpacity
@@ -119,6 +120,7 @@ const AudioPlayer = ({ id }) => {
 				style={waveformStyle({ playing: true })}
 				source={require('../assets/waveform.png')}
 			/>
+			<View style={styles.bar}></View>
 		</TouchableOpacity>
 	);
 };
@@ -131,10 +133,27 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		justifyContent: 'center',
 		alignItems: 'center',
+		position: 'relative',
 	},
 
 	playButton: {
 		width: 40,
 		height: 40,
+	},
+
+	bar: {
+		position: 'absolute',
+		width: 5,
+		height: 30,
+		backgroundColor: 'black',
+		right: 0,
+	},
+
+	barOff: {
+		position: 'absolute',
+		width: 5,
+		height: 30,
+		backgroundColor: 'grey',
+		right: 0,
 	},
 });

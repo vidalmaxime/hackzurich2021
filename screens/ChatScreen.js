@@ -161,8 +161,9 @@ const ChatScreen = ({ navigation, route }) => {
 								.reverse()
 								.map(({ id, data }) => {
 									let colors = ['#989898', '#989898'];
-									const dataApi = JSON.parse(data.dataApi);
-									if (dataApi) {
+
+									if (data.dataApi) {
+										const dataApi = JSON.parse(data.dataApi);
 										const sentiments = dataApi.sentiment;
 										colors = [];
 										sentiments.forEach((item, index) => {
@@ -207,22 +208,29 @@ const ChatScreen = ({ navigation, route }) => {
 										</View>
 									) : (
 										<View style={styles.containerAudioText} key={id}>
-											<View style={styles.receiver}>
-												<Avatar
-													rounded
-													source={{ uri: data.photoURL }}
-													size='medium'
-												/>
+											<View>
+												<LinearGradient
+													colors={colors}
+													start={{ x: 0, y: 0 }}
+													end={{ x: 1, y: 0 }}
+													style={styles.receiver}
+												>
+													<Avatar
+														rounded
+														source={{ uri: data.photoURL }}
+														size='medium'
+													/>
 
-												<AudioPlayer id={data.fileId} />
-												<Text style={styles.receiverName}>
-													{data.displayName}
-												</Text>
-												<Text style={styles.receiverTimestamp}>
-													{data.timestamp
-														?.toDate()
-														.toLocaleString('en-GB', { timeZone: 'UTC' })}
-												</Text>
+													<AudioPlayer id={data.fileId} />
+													<Text style={styles.receiverName}>
+														{data.displayName}
+													</Text>
+													<Text style={styles.receiverTimestamp}>
+														{data.timestamp
+															?.toDate()
+															.toLocaleString('en-GB', { timeZone: 'UTC' })}
+													</Text>
+												</LinearGradient>
 											</View>
 											<SummaryInfo data={data} origin={'receiver'} />
 										</View>

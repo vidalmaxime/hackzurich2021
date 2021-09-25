@@ -22,7 +22,7 @@ exports.processAudio = functions.storage.object().onFinalize(async (object) => {
 	data.append('audiofile', fs.createReadStream(tempFilePath));
 	const config = {
 		method: 'post',
-		url: 'http://9c5a-128-178-84-41.ngrok.io/speech2text',
+		url: 'http://a00d-128-178-84-41.ngrok.io/speech2text',
 		headers: {
 			...data.getHeaders(),
 		},
