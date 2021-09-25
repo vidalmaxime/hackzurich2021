@@ -8,7 +8,7 @@ from flask_cors import CORS
 from pyngrok import ngrok
 from rake_nltk import Rake
 import nltk
-
+import time
 import azure.cognitiveservices.speech as speechsdk
 from transformers import pipeline
 
@@ -17,30 +17,57 @@ from pydub import AudioSegment
 nltk.download('punkt')
 nltk.download('stopwords')
 
-def azure_batch_stt(filename: str):
-    speech_config = speechsdk.SpeechConfig(
-        subscription=speech_key,
-        region=service_region
-    )
-
+def speech_recognize_continuous_from_file(filename: str):
+    """performs continuous speech recognition with input from an audio file"""
+    # <SpeechContinuousRecognitionWithFile>
     speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
     speech_config.request_word_level_timestamps()
+    audio_config = speechsdk.audio.AudioConfig(filename=filename)
 
-    audio_input = speechsdk.AudioConfig(filename=filename)
-    speech_recognizer = speechsdk.SpeechRecognizer(
-        speech_config=speech_config,
-        audio_config=audio_input
-    )
+    speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_config)
 
-    result = speech_recognizer.recognize_once()
-    print(result.text)  # Full transcript with punctuation
+    done = False
 
+    def stop_cb(evt):
+        """callback that stops continuous recognition upon receiving an event evt"""
+        print('CLOSING on {}'.format(evt))
+        speech_recognizer.stop_continuous_recognition()
+        nonlocal done
+        done = True
+
+    all_results = []
+    def handle_final_result(evt):
+        all_results.append(evt.result)
+
+    speech_recognizer.recognized.connect(handle_final_result)
+    # Connect callbacks to the events fired by the speech recognizer
+    speech_recognizer.recognizing.connect(lambda evt: print('RECOGNIZING: {}'.format(evt)))
+    speech_recognizer.recognized.connect(lambda evt: print('RECOGNIZED: {}'.format(evt)))
+    speech_recognizer.session_started.connect(lambda evt: print('SESSION STARTED: {}'.format(evt)))
+    speech_recognizer.session_stopped.connect(lambda evt: print('SESSION STOPPED {}'.format(evt)))
+    speech_recognizer.canceled.connect(lambda evt: print('CANCELED {}'.format(evt)))
+    # stop continuous recognition on either session stopped or canceled events
+    speech_recognizer.session_stopped.connect(stop_cb)
+    speech_recognizer.canceled.connect(stop_cb)
+
+    # Start continuous speech recognition
+    speech_recognizer.start_continuous_recognition()
+    while not done:
+        time.sleep(.5)
+
+    print("Printing all results:")
+    print(all_results)
+    return all_results
+
+def azure_batch_stt(filename: str):
+    results = speech_recognize_continuous_from_file(filename)
+    utterances = [result.text for result in results]
+    full_transcript = ''.join(utterances)
+    all_jsons = [result.json for result in results]
     # Get token level timestamps
-    stt = json.loads(result.json)
-    print(stt)
     # confidences_in_nbest = [item['Confidence'] for item in stt['NBest']]
     best_index = 0  # confidences_in_nbest.index(max(confidences_in_nbest))
-    words = stt['NBest'][best_index]['Words']
+    words = [word for result_json in all_jsons for word in json.loads(result_json)['NBest'][best_index]['Words']]
     print(words)
 
     print(f"Word\tOffset\tDuration")
@@ -50,15 +77,14 @@ def azure_batch_stt(filename: str):
         tokens_data.append({"word": word['Word'], "offset": word['Offset'], "duration": word['Duration']})
 
     sentiment_classifier = pipeline('sentiment-analysis')
-    speech_utterances = result.text.split(".")
 
 
-    sentiments = [sentiment_classifier(speech_utterance) for speech_utterance in speech_utterances]
+    sentiments = [sentiment_classifier(speech_utterance) for speech_utterance in utterances]
     print(sentiments)
 
     # NER
     ner_pipeline = pipeline('ner')
-    ners = ner_pipeline(result.text)
+    ners = ner_pipeline(full_transcript)
     for ner in ners:
         ner['start'] = int(ner['start'])
         ner['end'] = int(ner['end'])
@@ -66,21 +92,19 @@ def azure_batch_stt(filename: str):
 
     # Keywords
     rake_nltk_processor = Rake()
-    rake_nltk_processor.extract_keywords_from_text(result.text)
+    rake_nltk_processor.extract_keywords_from_text(full_transcript)
     keywords_ranked = rake_nltk_processor.get_ranked_phrases()
-    num_phrases = len(result.text.split('.'))
-    keywords = keywords_ranked[:min(num_phrases, len(keywords_ranked))]
 
     speech_length= len(words)
     print(speech_length)
     if speech_length <= 20:
-        summary = result.text
+        summary = full_transcript
     else:
         summarizer = pipeline('summarization')
-        summary = summarizer(result.text, min_length=int(0.1*speech_length), max_length=int(0.8*speech_length))[0]["summary_text"]
+        summary = summarizer(full_transcript, min_length=int(0.1*speech_length), max_length=int(0.8*speech_length))[0]["summary_text"]
     print(summary)
-    if result.reason == speechsdk.ResultReason.RecognizedSpeech:
-        return result.text, tokens_data, sentiments, summary, ners, keywords
+    if results[0].reason == speechsdk.ResultReason.RecognizedSpeech:
+        return full_transcript, tokens_data, sentiments, summary, ners, keywords_ranked
     else:
         return "", "", "", ""
 
