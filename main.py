@@ -18,8 +18,8 @@ nltk.download('punkt')
 nltk.download('stopwords')
 
 def speech_recognize_continuous_from_file(filename: str):
-    """performs continuous speech recognition with input from an audio file"""
-    # <SpeechContinuousRecognitionWithFile>
+    """Performs continuous speech recognition with input from an audio file and returns the results."""
+
     speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
     speech_config.request_word_level_timestamps()
     audio_config = speechsdk.audio.AudioConfig(filename=filename)
@@ -60,10 +60,12 @@ def speech_recognize_continuous_from_file(filename: str):
     return all_results
 
 def azure_batch_stt(filename: str):
+    """Process azure transcript with NLP."""
     results = speech_recognize_continuous_from_file(filename)
     utterances = [result.text for result in results]
     full_transcript = ''.join(utterances)
     all_jsons = [result.json for result in results]
+
     # Get token level timestamps
     # confidences_in_nbest = [item['Confidence'] for item in stt['NBest']]
     best_index = 0  # confidences_in_nbest.index(max(confidences_in_nbest))
@@ -76,9 +78,8 @@ def azure_batch_stt(filename: str):
         print(f"{word['Word']}\t{word['Offset']}\t{word['Duration']}")
         tokens_data.append({"word": word['Word'], "offset": word['Offset'], "duration": word['Duration']})
 
+    # Sentiments
     sentiment_classifier = pipeline('sentiment-analysis')
-
-
     sentiments = [sentiment_classifier(speech_utterance) for speech_utterance in utterances]
     print(sentiments)
 
@@ -94,6 +95,8 @@ def azure_batch_stt(filename: str):
     rake_nltk_processor = Rake()
     rake_nltk_processor.extract_keywords_from_text(full_transcript)
     keywords_ranked = rake_nltk_processor.get_ranked_phrases()
+    num_phrases = len(full_transcript.split('.'))
+    keywords = keywords_ranked[:min(num_phrases, len(keywords_ranked))]
 
     speech_length= len(words)
     print(speech_length)
@@ -104,7 +107,7 @@ def azure_batch_stt(filename: str):
         summary = summarizer(full_transcript, min_length=int(0.1*speech_length), max_length=int(0.8*speech_length))[0]["summary_text"]
     print(summary)
     if results[0].reason == speechsdk.ResultReason.RecognizedSpeech:
-        return full_transcript, tokens_data, sentiments, summary, ners, keywords_ranked
+        return full_transcript, tokens_data, sentiments, summary, ners, keywords
     else:
         return "", "", "", ""
 
