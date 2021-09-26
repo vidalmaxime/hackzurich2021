@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
 		flexDirection: 'column',
 	},
 	header: {
-		marginLeft: 108,
+		marginLeft: 80,
 	},
 	headerText: {
 		fontSize: 23,
