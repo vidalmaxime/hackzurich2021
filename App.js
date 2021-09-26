@@ -27,7 +27,7 @@ function App() {
 				/>
 				<Stack.Screen
 					options={{
-						title: 'Home',
+						title: 'Chats',
 						headerTitleAlign: 'center',
 					}}
 					name='Home'

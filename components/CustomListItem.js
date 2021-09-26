@@ -20,20 +20,19 @@ const CustomListItem = ({ id, chatName, enterChat }) => {
 	}, []);
 
 	return (
-		<ListItem  key={id} bottomDivider onPress={() => enterChat(id, chatName)}>
+		<ListItem key={id} bottomDivider onPress={() => enterChat(id, chatName)}>
 			<Avatar
 				rounded
-				source={{
-					uri:
-						chatMessages?.[0]?.photoURL ||
-						'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png',
-				}}
+				source={
+					chatMessages?.[0]
+						? {
+								uri: chatMessages?.[0]?.photoURL,
+						  }
+						: require('../assets/logo.png')
+				}
 			/>
 			<ListItem.Content>
 				<ListItem.Title>{chatName}</ListItem.Title>
-				{/*<ListItem.Subtitle numberOfLines={1} ellipsizeMode='tail'>*/}
-				{/*	{chatMessages?.[0]?.displayName} : {chatMessages?.[0]?.message}*/}
-				{/*</ListItem.Subtitle>*/}
 			</ListItem.Content>
 		</ListItem>
 	);

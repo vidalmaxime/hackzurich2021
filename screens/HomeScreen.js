@@ -1,13 +1,12 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { View, Image } from 'react-native';
+import { View } from 'react-native';
 import { ScrollView } from 'react-native';
 import { TouchableOpacity } from 'react-native';
-import { StyleSheet, Text, SafeAreaView } from 'react-native';
+import { StyleSheet, SafeAreaView } from 'react-native';
 import { Avatar } from 'react-native-elements/dist/avatar/Avatar';
 import CustomListItem from '../components/CustomListItem';
 import { auth, db } from '../firebase';
-import { AntDesign, SimpleLineIcons } from '@expo/vector-icons';
-import { FlatList } from 'react-native-elements';
+import { SimpleLineIcons } from '@expo/vector-icons';
 
 const HomeScreen = ({ navigation }) => {
 	const [chats, setChats] = useState([]);
@@ -33,17 +32,14 @@ const HomeScreen = ({ navigation }) => {
 		navigation.setOptions({
 			headerTitle: 'voki',
 			headerLeft: () => (
-				<View style={{ marginLeft: 20 }}>
+				<View style={{ marginRight: 115 }}>
 					<TouchableOpacity activeOpacity={0.5} onPress={signOutUser}>
-						<Avatar rounded source={{ uri: auth?.currentUser?.photoURL }} />
+						<SimpleLineIcons name='logout' size={24} color='black' />
 					</TouchableOpacity>
 				</View>
 			),
 			headerRight: () => (
 				<View style={styles.headerRight}>
-					{/*<TouchableOpacity activeOpacity={0.5}>*/}
-					{/*	<AntDesign name='camerao' size={24} color='black' />*/}
-					{/*</TouchableOpacity>*/}
 					<TouchableOpacity
 						activeOpacity={0.5}
 						onPress={() => navigation.navigate('AddChat')}
@@ -62,9 +58,7 @@ const HomeScreen = ({ navigation }) => {
 	return (
 		<SafeAreaView>
 			<ScrollView>
-
 				{chats.map(({ id, data: { chatName } }) => (
-
 					<CustomListItem
 						key={id}
 						id={id}

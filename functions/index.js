@@ -22,13 +22,12 @@ exports.processAudio = functions.storage.object().onFinalize(async (object) => {
 	data.append('audiofile', fs.createReadStream(tempFilePath));
 	const config = {
 		method: 'post',
-		url: 'http://a00d-128-178-84-41.ngrok.io/speech2text',
+		url: 'http://a2c5-128-178-84-41.ngrok.io/speech2text',
 		headers: {
 			...data.getHeaders(),
 		},
 		data: data,
 	};
-	await admin.firestore().collection('test').add({ test: 'hello' });
 	const cloudFunctionPromise = axios(config)
 		.then(function (response) {
 			const apiOutput = JSON.stringify(response.data);

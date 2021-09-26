@@ -19,7 +19,6 @@ import { Audio } from 'expo-av';
 import AudioPlayer from '../components/AudioPlayer';
 import SummaryInfo from '../components/SummaryInfo';
 import uuid from 'react-native-uuid';
-import { LinearGradient } from 'expo-linear-gradient';
 
 const ChatScreen = ({ navigation, route }) => {
 	const [messages, setMessages] = useState([]);
@@ -49,11 +48,11 @@ const ChatScreen = ({ navigation, route }) => {
 		navigation.setOptions({
 			headerShown: true,
 			headerTintColor: '#4158D0',
-			// headerTitle: () => (
-			// 	<View>
-			// 		<Text>{route.params.chatName}</Text>
-			// 	</View>
-			// ),
+			headerTitle: () => (
+				<View style={styles.header}>
+					<Text style={styles.headerText}>{route.params.chatName}</Text>
+				</View>
+			),
 		});
 	}, [navigation, route]);
 
@@ -167,16 +166,18 @@ const ChatScreen = ({ navigation, route }) => {
 										const sentiments = dataApi.sentiment;
 										colors = [];
 										sentiments.forEach((item, index) => {
-											let score = item[0]['score'];
-											if (item[0]['label'] === 'NEGATIVE') {
-												score = 1 - score;
-											}
-											if (score < 0.33) {
+											if (
+												item[0]['label'] === 'others' ||
+												item[0]['score'] < 0.8
+											) {
+												colors.push('#606060');
+											} else if (
+												item[0]['label'] === 'sad' ||
+												item[0]['label'] === 'angry'
+											) {
 												colors.push('#4158D0');
-											} else if (score < 0.66) {
-												colors.push('#C850C0');
 											} else {
-												colors.push('#FFCC70');
+												colors.push('#ff6666');
 											}
 										});
 										if (colors.length === 1) {
@@ -272,5 +273,11 @@ const styles = StyleSheet.create({
 	},
 	containerAudioText: {
 		flexDirection: 'column',
+	},
+	header: {
+		marginLeft: 108,
+	},
+	headerText: {
+		fontSize: 23,
 	},
 });

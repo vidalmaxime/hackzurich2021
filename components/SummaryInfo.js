@@ -114,6 +114,7 @@ const styles = StyleSheet.create({
 
 	apiSummaryLoading: {
 		color: '#484848',
+		fontWeight: 'bold',
 	},
 
 	keyword: {
@@ -122,6 +123,7 @@ const styles = StyleSheet.create({
 		textAlign: 'center',
 		borderRadius: 10,
 		padding: 2,
+		fontWeight: 'bold',
 	},
 	flatlist: {
 		width: 200,

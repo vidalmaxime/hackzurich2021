@@ -75,8 +75,8 @@ const AudioPlayer = ({ id, data, origin, colors }) => {
 				const result = await soundObject.current
 					.getStatusAsync()
 					.catch((e) => console.log('error:', e));
-				console.log(result.playableDurationMillis);
-				soundDuration.current = result.playableDurationMillis;
+				console.log(result.durationMillis);
+				soundDuration.current = result.durationMillis;
 				if (result.isPlaying === false) {
 					soundObject.current
 						.playAsync()
@@ -201,13 +201,14 @@ const styles = StyleSheet.create({
 		bottom: 3,
 		left: 25,
 		color: 'white',
+		fontWeight: 'bold',
 	},
 	senderTimestamp: {
 		position: 'absolute',
-		bottom: 3,
+		bottom: 4,
 		right: 20,
 		color: 'white',
-		fontSize: 8,
+		fontSize: 10,
 	},
 	horContainer: {
 		flexDirection: 'row',

@@ -3,6 +3,7 @@ import { StatusBar } from 'react-native';
 import { StyleSheet, View, KeyboardAvoidingView } from 'react-native';
 import { Button, Input, Text } from 'react-native-elements';
 import { auth } from '../firebase';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const RegisterScreen = ({ navigation }) => {
 	const [fullName, setFullName] = useState('');
@@ -29,8 +30,17 @@ const RegisterScreen = ({ navigation }) => {
 	return (
 		<KeyboardAvoidingView behavior='padding' style={styles.container}>
 			<StatusBar style='light' />
-			<Text h3 style={{ marginBottom: 50 }}>
-				Create a Circle account.
+			<Text>
+				<Text h3 style={{ marginBottom: 50 }}>
+					Create a
+				</Text>
+				<Text h3 style={{ marginBottom: 50, color: '#48c0ff' }}>
+					{' '}
+					Voki{' '}
+				</Text>
+				<Text h3 style={{ marginBottom: 50 }}>
+					account.
+				</Text>
 			</Text>
 			<View style={styles.inputContainer}>
 				<Input
@@ -61,11 +71,18 @@ const RegisterScreen = ({ navigation }) => {
 					onSubmitEditing={register}
 				/>
 			</View>
+
 			<Button
-				onPress={register}
+				ViewComponent={LinearGradient} // Don't forget this!
+				linearGradientProps={{
+					colors: ['#48c0ff', '#b219ec'],
+					start: { x: 0, y: 0.5 },
+					end: { x: 1, y: 0.5 },
+				}}
 				title='Register'
 				raised
 				containerStyle={styles.button}
+				onPress={register}
 			/>
 		</KeyboardAvoidingView>
 	);
@@ -74,7 +91,11 @@ const RegisterScreen = ({ navigation }) => {
 export default RegisterScreen;
 
 const styles = StyleSheet.create({
-	container: { flex: 1, alignItems: 'center' },
-	button: { width: 200, marginTop: 10 },
-	inputContainer: { width: 300 },
+	container: { flex: 1, alignItems: 'center', paddingTop: 70 },
+	button: {
+		width: 200,
+		marginTop: 10,
+		borderRadius: 5,
+	},
+	inputContainer: { width: 300, paddingTop: 40 },
 });

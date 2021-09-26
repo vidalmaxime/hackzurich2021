@@ -1,8 +1,8 @@
 import React, { useLayoutEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, Input } from 'react-native-elements';
-import { Icon } from 'react-native-elements/dist/icons/Icon';
 import { db } from '../firebase';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const AddChatScreen = ({ navigation }) => {
 	const [input, setInput] = useState('');
@@ -31,12 +31,20 @@ const AddChatScreen = ({ navigation }) => {
 				placeholder='Enter a chat name'
 				value={input}
 				onChangeText={(text) => setInput(text)}
-				leftIcon={
-					<Icon name='wechat' type='antdesign' size={24} color='black' />
-				}
 				onSubmitEditing={createChat}
 			/>
-			<Button disabled={!input} title='Create new Chat' onPress={createChat} />
+			<Button
+				ViewComponent={LinearGradient} // Don't forget this!
+				linearGradientProps={{
+					colors: ['#48c0ff', '#b219ec'],
+					start: { x: 0, y: 0.5 },
+					end: { x: 1, y: 0.5 },
+				}}
+				title='Create new chat'
+				disabled={!input}
+				containerStyle={styles.button}
+				onPress={createChat}
+			/>
 		</View>
 	);
 };
@@ -44,5 +52,10 @@ const AddChatScreen = ({ navigation }) => {
 export default AddChatScreen;
 
 const styles = StyleSheet.create({
-	container: {},
+	container: { alignItems: 'center', justifyContent: 'center' },
+	button: {
+		width: 200,
+		marginTop: 10,
+		borderRadius: 5,
+	},
 });
