@@ -7,6 +7,7 @@ import { Avatar } from 'react-native-elements/dist/avatar/Avatar';
 import CustomListItem from '../components/CustomListItem';
 import { auth, db } from '../firebase';
 import { AntDesign, SimpleLineIcons } from '@expo/vector-icons';
+import { FlatList } from 'react-native-elements';
 
 const HomeScreen = ({ navigation }) => {
 	const [chats, setChats] = useState([]);
@@ -30,7 +31,7 @@ const HomeScreen = ({ navigation }) => {
 
 	useLayoutEffect(() => {
 		navigation.setOptions({
-			headerTitle: 'Circle',
+			headerTitle: 'voki',
 			headerLeft: () => (
 				<View style={{ marginLeft: 20 }}>
 					<TouchableOpacity activeOpacity={0.5} onPress={signOutUser}>
@@ -40,14 +41,14 @@ const HomeScreen = ({ navigation }) => {
 			),
 			headerRight: () => (
 				<View style={styles.headerRight}>
-					<TouchableOpacity activeOpacity={0.5}>
-						<AntDesign name='camerao' size={24} color='black' />
-					</TouchableOpacity>
+					{/*<TouchableOpacity activeOpacity={0.5}>*/}
+					{/*	<AntDesign name='camerao' size={24} color='black' />*/}
+					{/*</TouchableOpacity>*/}
 					<TouchableOpacity
 						activeOpacity={0.5}
 						onPress={() => navigation.navigate('AddChat')}
 					>
-						<SimpleLineIcons name='pencil' size={24} color='black' />
+						<SimpleLineIcons name='plus' size={24} color='black' />
 					</TouchableOpacity>
 				</View>
 			),
@@ -61,7 +62,9 @@ const HomeScreen = ({ navigation }) => {
 	return (
 		<SafeAreaView>
 			<ScrollView>
+
 				{chats.map(({ id, data: { chatName } }) => (
+
 					<CustomListItem
 						key={id}
 						id={id}
@@ -78,7 +81,7 @@ export default HomeScreen;
 
 const styles = StyleSheet.create({
 	headerRight: {
-		marginRight: 20,
+		marginRight: -40,
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		width: 80,
