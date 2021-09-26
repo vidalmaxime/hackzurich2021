@@ -250,8 +250,11 @@ const styles = StyleSheet.create({
 	micActivated: {
 		width: 180,
 		height: 180,
-		borderRadius: 50,
-		marginBottom: 25,
+		borderRadius: 90,
+		marginBottom: 15,
+		borderWidth: 10,
+		borderColor: '#FFCC70',
+		marginTop: 5,
 	},
 	micDeactivated: {
 		width: 150,
