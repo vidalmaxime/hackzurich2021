@@ -10,7 +10,8 @@ from rake_nltk import Rake
 import nltk
 import time
 import azure.cognitiveservices.speech as speechsdk
-from transformers import pipeline
+import transformers
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 
 from pydub import AudioSegment
 
@@ -79,7 +80,9 @@ def azure_batch_stt(filename: str):
         tokens_data.append({"word": word['Word'], "offset": word['Offset'], "duration": word['Duration']})
 
     # Sentiments
-    sentiment_classifier = pipeline('sentiment-analysis')
+    tokenizer = AutoTokenizer.from_pretrained("lordtt13/emo-mobilebert")
+    model = AutoModelForSequenceClassification.from_pretrained("lordtt13/emo-mobilebert")
+    sentiment_classifier = transformers.pipeline('sentiment-analysis', model=model, tokenizer=tokenizer)
     sentiments = [sentiment_classifier(speech_utterance) for speech_utterance in utterances]
     print(sentiments)
 
