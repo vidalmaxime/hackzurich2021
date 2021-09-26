@@ -4,16 +4,38 @@ import {
 	Text,
 	View,
 	TouchableOpacity,
-	FlatList,
 	SafeAreaView,
 } from 'react-native';
 import uuid from 'react-native-uuid';
 
-const SummaryInfo = ({ data, origin }) => {
+const SummaryInfo = ({ data, origin, move }) => {
 	const [showTranscript, setShowTranscript] = useState(false);
 
 	function onPress() {
 		setShowTranscript((prev) => !prev);
+	}
+
+	function onPressKeyword(item) {
+		const dataApi = JSON.parse(data.dataApi);
+		const items = item.split(' ');
+		dataApi.token_times.forEach((token, index) => {
+			let cond = true;
+			items.forEach((i, idx) => {
+				if (
+					i !==
+					dataApi.token_times[
+						Math.min(index + idx, dataApi.token_times.length - 1)
+					].word
+				) {
+					cond = false;
+				}
+			});
+			if (cond) {
+				const moveTime = Math.max(token.offset / 10000 - 1000, 0);
+				move(moveTime);
+				return;
+			}
+		});
 	}
 
 	if (data.dataApi) {
@@ -23,28 +45,33 @@ const SummaryInfo = ({ data, origin }) => {
 
 		return (
 			<View>
-				<TouchableOpacity activeOpacity={0.5} onPress={onPress}>
-					<SafeAreaView
-						style={
-							origin === 'receiver'
-								? styles.apiSummaryContainerReceiver
-								: styles.apiSummaryContainerSender
-						}
-					>
-						<FlatList
-							style={styles.flatlist}
-							data={keywords.slice(0, 5)}
-							renderItem={({ item }) => (
-								<View style={{ flex: 1, flexDirection: 'column', margin: 1 }}>
-									<Text style={styles.keyword}> #{item}</Text>
-								</View>
-							)}
-							//Setting the number of column
-							numColumns={3}
-							keyExtractor={() => uuid.v4()}
-						/>
-					</SafeAreaView>
-				</TouchableOpacity>
+				<View
+					style={
+						origin === 'receiver'
+							? styles.apiSummaryContainerReceiver
+							: styles.apiSummaryContainerSender
+					}
+				>
+					<TouchableOpacity activeOpacity={0.5} onLongPress={onPress}>
+						<SafeAreaView style={styles.flatlist}>
+							{keywords.slice(0, 5).map((item, id) => {
+								return (
+									<TouchableOpacity
+										activeOpacity={0.5}
+										onPress={() => onPressKeyword(item)}
+										key={uuid.v4()}
+									>
+										<View
+											style={{ flex: 1, flexDirection: 'column', margin: 1 }}
+										>
+											<Text style={styles.keyword}> {item}</Text>
+										</View>
+									</TouchableOpacity>
+								);
+							})}
+						</SafeAreaView>
+					</TouchableOpacity>
+				</View>
 				{showTranscript && (
 					<View
 						style={
@@ -63,8 +90,8 @@ const SummaryInfo = ({ data, origin }) => {
 			<View
 				style={
 					origin === 'receiver'
-						? styles.apiLoadingContainerReceiver
-						: styles.apiLoadingContainerSender
+						? styles.apiSummaryContainerReceiver
+						: styles.apiSummaryContainerSender
 				}
 			>
 				<Text style={styles.apiSummaryLoading}> Loading... </Text>
@@ -76,102 +103,63 @@ const SummaryInfo = ({ data, origin }) => {
 export default SummaryInfo;
 
 const styles = StyleSheet.create({
-	apiSummaryContainerReceiver: {
+	apiSummary: {
+		color: 'white',
+	},
+
+	apiTranscript: {
+		color: '#383838',
+		textAlign: 'center',
+	},
+
+	apiSummaryLoading: {
+		color: '#484848',
+	},
+
+	keyword: {
+		color: '#484848',
+		backgroundColor: 'rgba(0, 0, 0, 0.1)',
+		textAlign: 'center',
+		borderRadius: 10,
+		padding: 2,
+	},
+	flatlist: {
+		width: 200,
 		flexDirection: 'row',
+		flexWrap: 'wrap',
+	},
+	apiSummaryContainerReceiver: {
+		flexDirection: 'row-reverse',
 		width: '80%',
 		padding: '2%',
 		margin: '5%',
-		marginTop: 0,
+		marginTop: '0%',
+		marginBottom: '2%',
 		alignSelf: 'flex-start',
-
 		backgroundColor: 'rgba(0, 0, 0, 0.1)',
 		borderRadius: 30,
+		alignItems: 'center',
+		justifyContent: 'center',
 
-		// iOS only
-		shadowOffset: {
-			width: 2,
-			height: 2,
-		},
 		shadowColor: 'black',
 		shadowOpacity: 1,
+		position: 'relative',
 	},
 	apiSummaryContainerSender: {
 		flexDirection: 'row-reverse',
 		width: '80%',
 		padding: '2%',
 		margin: '5%',
-		marginTop: 0,
+		marginTop: '0%',
+		marginBottom: '2%',
 		alignSelf: 'flex-end',
+		alignItems: 'center',
+		justifyContent: 'center',
 
 		backgroundColor: 'rgba(0, 0, 0, 0.1)',
 		borderRadius: 30,
 
-		// iOS only
-		shadowOffset: {
-			width: 2,
-			height: 2,
-		},
 		shadowColor: 'black',
 		shadowOpacity: 1,
-	},
-
-	apiLoadingContainerSender: {
-		flexDirection: 'row-reverse',
-		width: '30%',
-		padding: '5%',
-		margin: '5%',
-		marginTop: 0,
-		alignSelf: 'flex-end',
-		justifyContent: 'center',
-
-		backgroundColor: 'rgba(0, 0, 0, 0.2)',
-		borderRadius: 30,
-
-		// iOS only
-		shadowOffset: {
-			width: 2,
-			height: 2,
-		},
-		shadowColor: 'black',
-		shadowOpacity: 1,
-	},
-
-	apiLoadingContainerReceiver: {
-		flexDirection: 'row',
-		width: '30%',
-		padding: '5%',
-		margin: '5%',
-		marginTop: 0,
-		alignSelf: 'flex-start',
-		justifyContent: 'center',
-
-		backgroundColor: 'rgba(0, 0, 0, 0.35)',
-		borderRadius: 30,
-
-		// iOS only
-		shadowOffset: {
-			width: 2,
-			height: 2,
-		},
-		shadowColor: 'black',
-		shadowOpacity: 1,
-	},
-
-	apiSummary: {
-		color: 'white',
-	},
-
-	apiTranscript: {
-		color: 'white',
-	},
-
-	apiSummaryLoading: {
-		color: 'white',
-	},
-
-	keyword: {
-		color: '#4158D0',
-		backgroundColor: 'rgba(0, 0, 0, 0.1)',
-		textAlign: 'center',
 	},
 });

@@ -183,59 +183,20 @@ const ChatScreen = ({ navigation, route }) => {
 											colors.push(colors[0]);
 										}
 									}
-									return data.email === auth.currentUser.email ? (
+									return (
 										<View style={styles.containerAudioText} key={id}>
 											<View>
-												<LinearGradient
+												<AudioPlayer
+													id={data.fileId}
+													data={data}
+													origin={
+														data.email === auth.currentUser.email
+															? 'sender'
+															: 'receiver'
+													}
 													colors={colors}
-													start={{ x: 0, y: 0 }}
-													end={{ x: 1, y: 0 }}
-													style={styles.sender}
-												>
-													<Avatar
-														rounded
-														source={{ uri: data.photoURL }}
-														size='medium'
-													/>
-
-													<AudioPlayer id={data.fileId} />
-													<Text style={styles.senderTimestamp}>
-														{data.timestamp
-															?.toDate()
-															.toLocaleString('en-GB', { timeZone: 'UTC' })}
-													</Text>
-												</LinearGradient>
+												/>
 											</View>
-
-											<SummaryInfo data={data} origin={'sender'} />
-										</View>
-									) : (
-										<View style={styles.containerAudioText} key={id}>
-											<View>
-												<LinearGradient
-													colors={colors}
-													start={{ x: 0, y: 0 }}
-													end={{ x: 1, y: 0 }}
-													style={styles.receiver}
-												>
-													<Avatar
-														rounded
-														source={{ uri: data.photoURL }}
-														size='medium'
-													/>
-
-													<AudioPlayer id={data.fileId} />
-													<Text style={styles.receiverName}>
-														{data.displayName}
-													</Text>
-													<Text style={styles.receiverTimestamp}>
-														{data.timestamp
-															?.toDate()
-															.toLocaleString('en-GB', { timeZone: 'UTC' })}
-													</Text>
-												</LinearGradient>
-											</View>
-											<SummaryInfo data={data} origin={'receiver'} />
 										</View>
 									);
 								})}
@@ -285,45 +246,7 @@ const styles = StyleSheet.create({
 		width: '100%',
 		padding: 20,
 	},
-	receiver: {
-		flexDirection: 'row',
-		width: '80%',
-		padding: '5%',
-		margin: '5%',
-		marginBottom: '2%',
-		alignSelf: 'flex-start',
-		backgroundColor: 'rgba(0, 0, 0, 0.35)',
-		borderRadius: 30,
 
-		// iOS only
-		shadowOffset: {
-			width: 5,
-			height: 5,
-		},
-		shadowColor: 'black',
-		shadowOpacity: 1,
-		position: 'relative',
-	},
-
-	sender: {
-		flexDirection: 'row-reverse',
-		width: '80%',
-		padding: '5%',
-		margin: '5%',
-		marginBottom: '2%',
-		alignSelf: 'flex-end',
-
-		backgroundColor: 'rgba(0, 0, 0, 0.2)',
-		borderRadius: 30,
-
-		// iOS only
-		shadowOffset: {
-			width: 5,
-			height: 5,
-		},
-		shadowColor: 'black',
-		shadowOpacity: 1,
-	},
 	micActivated: {
 		width: 180,
 		height: 180,
@@ -333,8 +256,11 @@ const styles = StyleSheet.create({
 	micDeactivated: {
 		width: 150,
 		height: 150,
-		borderRadius: 50,
-		marginBottom: 40,
+		borderRadius: 75,
+		marginBottom: 30,
+		marginTop: 20,
+		borderWidth: 5,
+		borderColor: 'rgba(0, 0, 0, 0.2)',
 	},
 	containerRecord: {
 		display: 'flex',
@@ -343,26 +269,5 @@ const styles = StyleSheet.create({
 	},
 	containerAudioText: {
 		flexDirection: 'column',
-	},
-
-	receiverName: {
-		position: 'absolute',
-		bottom: 3,
-		left: 30,
-		color: 'white',
-	},
-	receiverTimestamp: {
-		position: 'absolute',
-		bottom: 3,
-		right: 20,
-		color: 'white',
-		fontSize: 8,
-	},
-	senderTimestamp: {
-		position: 'absolute',
-		bottom: 3,
-		left: 20,
-		color: 'white',
-		fontSize: 8,
 	},
 });
